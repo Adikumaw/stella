@@ -9,6 +9,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 import com.nothing.ecommerce.services.UserService;
+import com.nothing.ecommerce.data.UserRegistration;
 import com.nothing.ecommerce.entity.*;
 
 import org.springframework.context.annotation.Bean;
@@ -21,11 +22,21 @@ public class EcommerceApplication {
 	}
 
 	@Bean
+	@Autowired
 	public CommandLineRunner commandLineRunner(UserService userService) {
 		return runner -> {
-			UserDetails userDetails = new UserDetails("aditya", "kumawataditya", "7877595234");
+
+			System.out.println(userService.getUser(1));
+
+			UserRegistration userRegistration = new UserRegistration("banti", "", "8529198984",
+					"nothing_Phone2a");
+
+			UserDetails userDetails = new UserDetails(userRegistration.getUserName(), userRegistration.getEmail(),
+					userRegistration.getNumber());
 
 			userService.saveUser(userDetails);
+
+			LoginCredentials loginC = new LoginCredentials(userRegistration.getPassword());
 		};
 	}
 }

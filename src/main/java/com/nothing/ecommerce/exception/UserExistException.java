@@ -1,4 +1,4 @@
-package exception;
+package com.nothing.ecommerce.exception;
 
 public class UserExistException extends RuntimeException {
 

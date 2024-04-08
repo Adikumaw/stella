@@ -30,16 +30,6 @@ public class UserDetails {
         this.userName = userName;
         this.email = email;
         this.number = number;
-    }
-
-    @Override
-    public String toString() {
-        return "UserDetails{" +
-                " user_id=" + this.userId +
-                ", user_name='" + this.userName + '\'' +
-                ", email='" + this.email + '\'' +
-                ", number='" + this.number + '\'' +
-                ", active='" + this.active + '\'' +
-                '}';
+        this.active = 1;
     }
 }
