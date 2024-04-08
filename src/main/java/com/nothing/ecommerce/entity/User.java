@@ -1,5 +1,7 @@
 package com.nothing.ecommerce.entity;
 
+import java.util.List;
+
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -8,11 +10,14 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Table(name = "users")
-public class LoginCredentials {
+public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private int userId;
+
+    @Column(name = "user_name")
+    private String userName;
 
     @Column(name = "email")
     private String email;
@@ -26,8 +31,14 @@ public class LoginCredentials {
     @Column(name = "active")
     private int active;
 
-    public LoginCredentials(String password) {
-        this.password = password;
-    }
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "user", cascade = CascadeType.ALL)
+    private List<UserAddress> addressList;
 
+    public User(String userName, String email, String number, String password) {
+        this.userName = userName;
+        this.email = email;
+        this.number = number;
+        this.password = password;
+        this.active = 1;
+    }
 }

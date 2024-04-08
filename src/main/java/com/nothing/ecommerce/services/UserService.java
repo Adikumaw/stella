@@ -2,18 +2,16 @@ package com.nothing.ecommerce.services;
 
 import java.util.Optional;
 
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.nothing.ecommerce.dao.LoginCredentialsRepository;
 import com.nothing.ecommerce.dao.UserAddressRepository;
 import com.nothing.ecommerce.dao.UserRepository;
-import com.nothing.ecommerce.entity.UserDetails;
+import com.nothing.ecommerce.entity.User;
 import com.nothing.ecommerce.entity.UserAddress;
-import com.nothing.ecommerce.entity.LoginCredentials;
 import com.nothing.ecommerce.miscellaneous.*;
 
 import com.nothing.ecommerce.exception.UserExistException;
-import com.nothing.ecommerce.exception.UserNotFoundException;
 
 @Service
 public class UserService {
@@ -23,15 +21,15 @@ public class UserService {
     // userAddress contains { userId, streetAddress, city, state, postalCode,
     // country }
     private UserAddressRepository userAddressRepository;
-    // LoginCredentials contains { userId, email, number, password, active }
-    private LoginCredentialsRepository loginCredentialsRepository;
+    // passwordEncoder is used to encode the password
+    private PasswordEncoder passwordEncoder;
 
     // Injecting repositories ...
     public UserService(UserRepository userRepository, UserAddressRepository userAddressRepository,
-            LoginCredentialsRepository loginCredentialsRepository) {
+            PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
         this.userAddressRepository = userAddressRepository;
-        this.loginCredentialsRepository = loginCredentialsRepository;
+        this.passwordEncoder = passwordEncoder;
     }
 
     /**
@@ -41,17 +39,17 @@ public class UserService {
      * @return the user details as a string
      */
     public String getUser(int userId) {
-        UserDetails userDetails;
+        User user;
         UserAddress userAddress;
         String UserDetailsString = "";
 
         // fetch the user
-        Optional<UserDetails> fetchedUser = userRepository.findById(userId);
+        Optional<User> fetchedUser = userRepository.findById(userId);
         Optional<UserAddress> fetchedUserAddress = userAddressRepository.findById(userId);
 
         if (fetchedUser.isPresent()) {
-            userDetails = fetchedUser.get();
-            UserDetailsString = userDetails.toString();
+            user = fetchedUser.get();
+            UserDetailsString = user.toString();
             if (fetchedUserAddress.isPresent()) {
                 userAddress = fetchedUserAddress.get();
                 UserDetailsString += " " + userAddress.toString();
@@ -66,15 +64,16 @@ public class UserService {
      * @param userDetails the user details to be saved
      * @return the saved user details
      */
-    public UserDetails saveUser(UserDetails userDetails) {
-        int userId = userDetails.getUserId();
-        if (isUserExist(userId)) {
-            throw new UserExistException("user already exists {check your username}");
+    public User registerUser(User user) {
+        String encryptedPassword;
+        verifyNewUser(user);
+        if (user.getPassword() != null || user.getPassword() != "") {
+            encryptedPassword = passwordEncoder.encode(user.getPassword());
+            user.setPassword("{bcrypt}" + encryptedPassword);
+        } else {
+            throw new IllegalArgumentException("empty password");
         }
-
-        checkUserDetails(userDetails);
-
-        return userRepository.save(userDetails);
+        return userRepository.save(user);
     }
 
     /**
@@ -89,28 +88,38 @@ public class UserService {
 
     // checks if user exists or not using user Id ...
     public boolean isUserExist(int userId) {
-        Optional<UserDetails> OpUserDetails = userRepository.findById(userId);
+        Optional<User> OpUserDetails = userRepository.findById(userId);
         if (OpUserDetails.isPresent()) {
             return true;
         }
         return false;
     }
 
-    public boolean checkUserDetails(UserDetails userDetails) {
-        String name = userDetails.getUserName();
-        String email = userDetails.getEmail();
-        String number = userDetails.getNumber();
+    public boolean verifyNewUser(User user) {
+        int userId = user.getUserId();
+        String name = user.getUserName();
+        String email = user.getEmail();
+        String number = user.getNumber();
 
+        // checking user identity
+        if (isUserExist(userId)) {
+            throw new UserExistException("user already exists");
+        }
+        // checking user name
         if (name == null || name == "") {
             System.out.println("throw new IllegalStateException invalid user name");
             throw new IllegalArgumentException("Invalid user name");
         }
+        // checking user number
         checkNumber(number);
+        // checking user email
         if (email == null || email == "") {
-            userDetails.setEmail(null);
+            user.setEmail(null);
         } else {
             checkEmail(email);
         }
+
+        // returning true if all passed
         return true;
     }
 
@@ -121,7 +130,7 @@ public class UserService {
             throw new IllegalArgumentException("Invalid phone number");
         }
 
-        UserDetails userDetails = userRepository.findByNumber(number);
+        User userDetails = userRepository.findByNumber(number);
         if (userDetails != null) {
             System.out.println("user already exists {check your phone number}");
             throw new UserExistException("user Already exists");
@@ -137,12 +146,29 @@ public class UserService {
             throw new IllegalArgumentException("Invalid email Address");
         }
 
-        UserDetails userDetails = userRepository.findByEmail(email);
-        if (userDetails == null) {
+        User userDetails = userRepository.findByEmail(email);
+        if (userDetails != null) {
             System.out.println("user already exists {check your email}");
             throw new UserExistException("user Already exists");
         }
 
         return true;
     }
+
+    public User findUser(String toFind) {
+        if (Miscellaneous.verifyEmail(toFind)) {
+            User userDetails = userRepository.findByEmail(toFind);
+            if (userDetails != null) {
+                return userDetails;
+            }
+        }
+        if (Miscellaneous.verifyMobileNumber(toFind)) {
+            User userDetails = userRepository.findByNumber(toFind);
+            if (userDetails != null) {
+                return userDetails;
+            }
+        }
+        return null;
+    }
+
 }

@@ -9,15 +9,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @Table(name = "address")
 public class UserAddress {
-
-    public UserAddress(String streetAddress, String city, String state, String postalCode, String country) {
-        this.streetAddress = streetAddress;
-        this.city = city;
-        this.state = state;
-        this.postalCode = postalCode;
-        this.country = country;
-    }
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
@@ -37,4 +28,16 @@ public class UserAddress {
 
     @Column(name = "country")
     private String country;
+
+    @ManyToOne
+    private User user;
+
+    public UserAddress(String streetAddress, String city, String state, String postalCode, String country, User user) {
+        this.streetAddress = streetAddress;
+        this.city = city;
+        this.state = state;
+        this.postalCode = postalCode;
+        this.country = country;
+        this.user = user;
+    }
 }
