@@ -28,12 +28,15 @@ public class EcommerceApplication {
 			// "insecurity");
 			// userService.registerUser(myUser);
 
-			User myUser = userService.findUser("8290111126");
-			if (myUser != null) {
-				UserAddress userAddress = new UserAddress("2004 tikki walo ka rasta, kishanpole bazar", "jaipur",
-						"Rajasthan", "302012", "India", myUser);
-				userService.saveUserAddress(userAddress);
-			}
+			// User myUser = userService.findUser("8290111126");
+			// if (myUser != null) {
+			// UserAddress userAddress = new UserAddress(myUser.getUserId(),
+			// "2004 tikki walo ka rasta, kishanpole bazar", "jaipur",
+			// "Rajasthan", "302012", "India");
+			// userService.saveUserAddress(userAddress);
+			// }
+
+			System.out.println(userService.getUser(8));
 		};
 	}
 }

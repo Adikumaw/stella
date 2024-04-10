@@ -1,5 +1,6 @@
 package com.nothing.ecommerce.services;
 
+import java.util.List;
 import java.util.Optional;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -40,19 +41,17 @@ public class UserService {
      */
     public String getUser(int userId) {
         User user;
-        UserAddress userAddress;
         String UserDetailsString = "";
 
         // fetch the user
         Optional<User> fetchedUser = userRepository.findById(userId);
-        Optional<UserAddress> fetchedUserAddress = userAddressRepository.findById(userId);
+        List<UserAddress> fetchedUserAddress = userAddressRepository.findByUserId(userId);
 
         if (fetchedUser.isPresent()) {
             user = fetchedUser.get();
             UserDetailsString = user.toString();
-            if (fetchedUserAddress.isPresent()) {
-                userAddress = fetchedUserAddress.get();
-                UserDetailsString += " " + userAddress.toString();
+            for (UserAddress address : fetchedUserAddress) {
+                UserDetailsString += " \n" + address.toString();
             }
         }
         return UserDetailsString;
@@ -71,7 +70,7 @@ public class UserService {
             encryptedPassword = passwordEncoder.encode(user.getPassword());
             user.setPassword("{bcrypt}" + encryptedPassword);
         } else {
-            throw new IllegalArgumentException("empty password");
+            throw new IllegalArgumentException("empty password field");
         }
         return userRepository.save(user);
     }
@@ -95,7 +94,7 @@ public class UserService {
         return false;
     }
 
-    public boolean verifyNewUser(User user) {
+    public void verifyNewUser(User user) {
         int userId = user.getUserId();
         String name = user.getUserName();
         String email = user.getEmail();
@@ -118,12 +117,9 @@ public class UserService {
         } else {
             checkEmail(email);
         }
-
-        // returning true if all passed
-        return true;
     }
 
-    public boolean checkNumber(String number) {
+    public void checkNumber(String number) {
         System.out.println("checking mobile number ...");
         if (!Miscellaneous.verifyMobileNumber(number)) {
             System.out.println("throw new IllegalArgumentException for wrong mobile number");
@@ -135,11 +131,9 @@ public class UserService {
             System.out.println("user already exists {check your phone number}");
             throw new UserExistException("user Already exists");
         }
-
-        return true;
     }
 
-    public boolean checkEmail(String email) {
+    public void checkEmail(String email) {
         System.out.println("checking email ...");
         if (!Miscellaneous.verifyEmail(email)) {
             System.out.println("throw new IllegalArgumentException for wrong email Address");
@@ -151,8 +145,6 @@ public class UserService {
             System.out.println("user already exists {check your email}");
             throw new UserExistException("user Already exists");
         }
-
-        return true;
     }
 
     public User findUser(String toFind) {
@@ -160,15 +152,19 @@ public class UserService {
             User userDetails = userRepository.findByEmail(toFind);
             if (userDetails != null) {
                 return userDetails;
+            } else {
+                throw new UserExistException("user not found");
             }
         }
         if (Miscellaneous.verifyMobileNumber(toFind)) {
             User userDetails = userRepository.findByNumber(toFind);
             if (userDetails != null) {
                 return userDetails;
+            } else {
+                throw new UserExistException("user not found");
             }
         }
-        return null;
+        throw new IllegalArgumentException("input is not a valid email address or number");
     }
 
 }

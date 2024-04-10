@@ -1,19 +1,22 @@
 package com.nothing.ecommerce.entity;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Data
 @NoArgsConstructor
+@AllArgsConstructor
+@IdClass(AddressId.class)
 @Table(name = "address")
 public class UserAddress {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
     private int userId;
 
+    @Id
     @Column(name = "street_address")
     private String streetAddress;
 
@@ -29,15 +32,18 @@ public class UserAddress {
     @Column(name = "country")
     private String country;
 
-    @ManyToOne
-    private User user;
-
-    public UserAddress(String streetAddress, String city, String state, String postalCode, String country, User user) {
+    public UserAddress(String streetAddress, String city, String state, String postalCode, String country) {
         this.streetAddress = streetAddress;
         this.city = city;
         this.state = state;
         this.postalCode = postalCode;
         this.country = country;
-        this.user = user;
+    }
+
+    @Override
+    public String toString() {
+        return "UserAddress {\n\tuserId=" + userId + ", \n\tstreetAddress=" + streetAddress + ", \n\tcity="
+                + city + ", \n\tstate=" + state + ", \n\tpostalCode=" + postalCode + ", \n\tcountry=" + country
+                + "\n}";
     }
 }
