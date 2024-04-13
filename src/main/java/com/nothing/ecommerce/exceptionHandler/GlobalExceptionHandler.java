@@ -22,6 +22,16 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler
+    public ResponseEntity<NotFoundErrorResponse> handleException(AddressNotFoundException exc) {
+        // create response entity
+        NotFoundErrorResponse resp = new NotFoundErrorResponse(
+                HttpStatus.NOT_FOUND.value(),
+                exc.getMessage(),
+                System.currentTimeMillis());
+        return new ResponseEntity<>(resp, HttpStatus.NOT_FOUND);
+    }
+
+    @ExceptionHandler
     public ResponseEntity<IllegalArgumentResponse> handleException(IllegalArgumentException exc) {
 
         // create response entity

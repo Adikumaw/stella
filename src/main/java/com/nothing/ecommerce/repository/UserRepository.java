@@ -1,4 +1,4 @@
-package com.nothing.ecommerce.dao;
+package com.nothing.ecommerce.repository;
 
 import com.nothing.ecommerce.entity.*;
 

@@ -32,18 +32,23 @@ public class UserAddress {
     @Column(name = "country")
     private String country;
 
+    @Column(name = "main")
+    private int main;
+
     public UserAddress(String streetAddress, String city, String state, String postalCode, String country) {
         this.streetAddress = streetAddress;
         this.city = city;
         this.state = state;
         this.postalCode = postalCode;
         this.country = country;
+        this.main = 0;
     }
 
     @Override
     public String toString() {
         return "UserAddress {\n\tuserId=" + userId + ", \n\tstreetAddress=" + streetAddress + ", \n\tcity="
                 + city + ", \n\tstate=" + state + ", \n\tpostalCode=" + postalCode + ", \n\tcountry=" + country
+                + ", \n\tmain=" + main
                 + "\n}";
     }
 }

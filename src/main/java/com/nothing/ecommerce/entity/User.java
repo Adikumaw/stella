@@ -1,6 +1,6 @@
 package com.nothing.ecommerce.entity;
 
-import java.util.List;
+import com.nothing.ecommerce.model.UserModel;
 
 import jakarta.persistence.*;
 import lombok.Data;
@@ -18,7 +18,7 @@ public class User {
     private int userId;
 
     @Column(name = "user_name")
-    private String userName;
+    private String name;
 
     @Column(name = "email")
     private String email;
@@ -32,17 +32,29 @@ public class User {
     @Column(name = "active")
     private int active;
 
-    public User(String userName, String email, String number, String password) {
-        this.userName = userName;
+    public User(String name, String email, String number, String password) {
+        this.name = name;
         this.email = email;
         this.number = number;
         this.password = password;
         this.active = 1;
     }
 
+    public User(UserModel userModel) {
+        this.name = userModel.getUserName();
+        this.email = userModel.getEmail();
+        this.number = userModel.getNumber();
+        this.password = userModel.getPassword();
+        this.active = 1;
+    }
+
+    public int isActive() {
+        return active;
+    }
+
     @Override
     public String toString() {
-        return "User {\n\tuserId=" + userId + ", \n\tuserName=" + userName + ", \n\temail=" + email + ", \n\tnumber="
+        return "User {\n\tuserId=" + userId + ", \n\tuserName=" + name + ", \n\temail=" + email + ", \n\tnumber="
                 + number
                 + ", \n\tpassword=" + password + ", \n\tactive=" + active + "\n}";
     }

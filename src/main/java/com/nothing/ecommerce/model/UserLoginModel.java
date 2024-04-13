@@ -1,17 +1,17 @@
-package com.nothing.ecommerce.data;
+package com.nothing.ecommerce.model;
 
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
 @Data
 @NoArgsConstructor
-public class LoginCredentials {
+public class UserLoginModel {
     private String email;
     private String number;
     private String password;
     private int active;
 
-    public LoginCredentials(String referance, String password) {
+    public UserLoginModel(String referance, String password) {
         this.password = password;
     }
 }
