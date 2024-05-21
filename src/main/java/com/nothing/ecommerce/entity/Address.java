@@ -1,5 +1,7 @@
 package com.nothing.ecommerce.entity;
 
+import com.nothing.ecommerce.model.AddressModel;
+
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -11,7 +13,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @IdClass(AddressId.class)
 @Table(name = "address")
-public class UserAddress {
+public class Address {
     @Id
     @Column(name = "user_id")
     private int userId;
@@ -35,13 +37,14 @@ public class UserAddress {
     @Column(name = "main")
     private int main;
 
-    public UserAddress(String streetAddress, String city, String state, String postalCode, String country) {
-        this.streetAddress = streetAddress;
-        this.city = city;
-        this.state = state;
-        this.postalCode = postalCode;
-        this.country = country;
-        this.main = 0;
+    public Address(int userId, AddressModel addressModel) {
+        this.userId = userId;
+        this.streetAddress = addressModel.getStreetAddress();
+        this.city = addressModel.getCity();
+        this.state = addressModel.getState();
+        this.postalCode = addressModel.getPostalCode();
+        this.country = addressModel.getCountry();
+        this.main = addressModel.getMain();
     }
 
     @Override

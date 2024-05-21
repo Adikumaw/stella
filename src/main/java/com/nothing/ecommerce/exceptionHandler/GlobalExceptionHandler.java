@@ -41,4 +41,10 @@ public class GlobalExceptionHandler {
                 System.currentTimeMillis());
         return new ResponseEntity<>(resp, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler
+    public ResponseEntity<String> handleException(UserExistException exc) {
+
+        return new ResponseEntity<>(exc.getMessage(), HttpStatus.BAD_REQUEST);
+    }
 }

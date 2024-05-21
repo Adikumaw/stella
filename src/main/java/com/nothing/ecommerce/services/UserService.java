@@ -3,7 +3,8 @@ package com.nothing.ecommerce.services;
 import java.util.List;
 
 import com.nothing.ecommerce.entity.User;
-import com.nothing.ecommerce.entity.UserAddress;
+import com.nothing.ecommerce.entity.Address;
+import com.nothing.ecommerce.model.AddressModel;
 import com.nothing.ecommerce.model.UserModel;
 
 public interface UserService {
@@ -30,15 +31,15 @@ public interface UserService {
     // ----------------------------------------------------------------
     // service methods for User Address
     // ----------------------------------------------------------------
-    public UserAddress saveUserAddress(UserAddress userAddress);
+    public Address saveAddress(String reference, AddressModel addressModel);
 
-    public List<UserAddress> getUserAddresses(int userId);
+    public List<Address> getUserAddresses(int userId);
 
-    public UserAddress getUserAddress(int userId, String streetAddress);
+    public Address getUserAddress(int userId, String streetAddress);
 
-    public UserAddress updateAddress(String streetAddress,
+    public Address updateAddress(String streetAddress,
             String city, String state, String postalCode, String country, int main, String oldStreetAddress,
             int userId);
 
-    public void removeAddress(UserAddress address);
+    public void removeAddress(Address address);
 }

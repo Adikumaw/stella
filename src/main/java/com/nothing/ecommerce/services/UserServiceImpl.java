@@ -8,10 +8,11 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.nothing.ecommerce.entity.User;
-import com.nothing.ecommerce.entity.UserAddress;
+import com.nothing.ecommerce.entity.Address;
 import com.nothing.ecommerce.miscellaneous.*;
+import com.nothing.ecommerce.model.AddressModel;
 import com.nothing.ecommerce.model.UserModel;
-import com.nothing.ecommerce.repository.UserAddressRepository;
+import com.nothing.ecommerce.repository.AddressRepository;
 import com.nothing.ecommerce.repository.UserRepository;
 import com.nothing.ecommerce.exception.AddressNotFoundException;
 import com.nothing.ecommerce.exception.UserExistException;
@@ -20,14 +21,14 @@ import com.nothing.ecommerce.exception.UserExistException;
 public class UserServiceImpl implements UserService {
 
     private UserRepository userRepository;
-    private UserAddressRepository userAddressRepository;
+    private AddressRepository addressRepository;
     private PasswordEncoder passwordEncoder;
 
     // Injecting repositories ...
-    public UserServiceImpl(UserRepository userRepository, UserAddressRepository userAddressRepository,
+    public UserServiceImpl(UserRepository userRepository, AddressRepository addressRepository,
             PasswordEncoder passwordEncoder) {
         this.userRepository = userRepository;
-        this.userAddressRepository = userAddressRepository;
+        this.addressRepository = addressRepository;
         this.passwordEncoder = passwordEncoder;
     }
 
@@ -42,7 +43,7 @@ public class UserServiceImpl implements UserService {
 
         if (userModel.getPassword() != null || userModel.getPassword() != "") {
             encryptedPassword = passwordEncoder.encode(userModel.getPassword());
-            userModel.setPassword("{bcrypt}" + encryptedPassword);
+            userModel.setPassword(encryptedPassword);
         } else {
             throw new IllegalArgumentException("empty password field");
         }
@@ -101,7 +102,7 @@ public class UserServiceImpl implements UserService {
             boolean verifyOldPassword = passwordEncoder.matches(oldPassword, fetchedUser.getPassword());
             if (verifyOldPassword) {
                 String encryptedPassword = passwordEncoder.encode(newPassword);
-                fetchedUser.setPassword("{bcrypt}" + encryptedPassword);
+                fetchedUser.setPassword(encryptedPassword);
                 return userRepository.save(fetchedUser);
             }
         }
@@ -125,9 +126,9 @@ public class UserServiceImpl implements UserService {
         // removing user addresses
         User user = getUser(userId);
         if (user != null) {
-            List<UserAddress> addresses = userAddressRepository.findByUserId(userId);
-            for (UserAddress address : addresses) {
-                userAddressRepository.delete(address);
+            List<Address> addresses = addressRepository.findByUserId(userId);
+            for (Address address : addresses) {
+                addressRepository.delete(address);
             }
 
             userRepository.delete(user);
@@ -137,18 +138,38 @@ public class UserServiceImpl implements UserService {
     // ----------------------------------------------------------------
     // service methods for User Address
     // ----------------------------------------------------------------
-
-    public UserAddress saveUserAddress(UserAddress userAddress) {
-        List<UserAddress> userAddresses = getUserAddresses(userAddress.getUserId());
-        if (userAddresses.size() == 0 || userAddresses == null) {
-            userAddress.setMain(1);
+    @Override
+    public Address saveAddress(String reference, AddressModel addressModel) {
+        int userId;
+        // fetch userId
+        if (Miscellaneous.verifyEmail(reference)) {
+            userId = userRepository.findUserIdByEmail(reference);
+        } else if (Miscellaneous.verifyMobileNumber(reference)) {
+            userId = userRepository.findUserIdByNumber(reference);
+        } else {
+            throw new IllegalArgumentException("Invalid reference: " + reference);
         }
-        return userAddressRepository.save(userAddress);
+
+        List<Address> addresses = getUserAddresses(userId);
+
+        // removing main from other addresses
+        if (addressModel.getMain() == 1) {
+            for (Address addr : addresses) {
+                if (addr.getMain() == 1) {
+                    // TODO scope for modification for performance
+                    addr.setMain(0);
+                    addressRepository.save(addr);
+                }
+            }
+        }
+
+        Address address = new Address(userId, addressModel);
+        return addressRepository.save(address);
     }
 
     @Override
-    public List<UserAddress> getUserAddresses(int userId) {
-        List<UserAddress> fetchedUserAddress = userAddressRepository.findByUserId(userId);
+    public List<Address> getUserAddresses(int userId) {
+        List<Address> fetchedUserAddress = addressRepository.findByUserId(userId);
         if (fetchedUserAddress != null) {
             return fetchedUserAddress;
         }
@@ -156,8 +177,8 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserAddress getUserAddress(int userId, String streetAddress) {
-        UserAddress fetchedUserAddress = userAddressRepository.findByUserIdAndStreetAddress(userId, streetAddress);
+    public Address getUserAddress(int userId, String streetAddress) {
+        Address fetchedUserAddress = addressRepository.findByUserIdAndStreetAddress(userId, streetAddress);
         if (fetchedUserAddress != null) {
             return fetchedUserAddress;
         }
@@ -166,34 +187,34 @@ public class UserServiceImpl implements UserService {
 
     @Override
     @Transactional
-    public UserAddress updateAddress(String streetAddress,
+    public Address updateAddress(String streetAddress,
             String city, String state, String postalCode, String country, int main, String oldStreetAddress,
             int userId) {
-        UserAddress address = userAddressRepository.findByUserIdAndStreetAddress(userId, oldStreetAddress);
+        Address address = addressRepository.findByUserIdAndStreetAddress(userId, oldStreetAddress);
         if (address != null) {
-            userAddressRepository.updateUserAddress(userId, streetAddress, city, state, postalCode, country, main,
+            addressRepository.updateUserAddress(userId, streetAddress, city, state, postalCode, country, main,
                     oldStreetAddress);
 
-            UserAddress updatedAddress = userAddressRepository.findByUserIdAndStreetAddress(userId, streetAddress);
+            Address updatedAddress = addressRepository.findByUserIdAndStreetAddress(userId, streetAddress);
             return updatedAddress;
         }
         return null;
     };
 
     @Override
-    public void removeAddress(UserAddress address) {
-        UserAddress userAddress = userAddressRepository.findByUserIdAndStreetAddress(address.getUserId(),
+    public void removeAddress(Address address) {
+        Address userAddress = addressRepository.findByUserIdAndStreetAddress(address.getUserId(),
                 address.getStreetAddress());
         if (userAddress != null) {
-            userAddressRepository.delete(userAddress);
+            addressRepository.delete(userAddress);
             // check the deleted userAddress is main and add main to next userAddress if it
             // exists
             if (userAddress.getMain() == 1) {
-                List<UserAddress> addresses = userAddressRepository.findByUserId(address.getUserId());
+                List<Address> addresses = addressRepository.findByUserId(address.getUserId());
                 if (addresses != null) {
-                    UserAddress primaryAddress = addresses.get(0);
-                    primaryAddress.setMain(1);
-                    userAddressRepository.save(primaryAddress);
+                    Address newPrimaryAddress = addresses.get(0);
+                    newPrimaryAddress.setMain(1);
+                    addressRepository.save(newPrimaryAddress);
                 }
             }
         } else {
@@ -211,12 +232,12 @@ public class UserServiceImpl implements UserService {
 
         // fetch the user
         Optional<User> fetchedUser = userRepository.findById(userId);
-        List<UserAddress> fetchedUserAddress = userAddressRepository.findByUserId(userId);
+        List<Address> fetchedUserAddress = addressRepository.findByUserId(userId);
 
         if (fetchedUser.isPresent()) {
             user = fetchedUser.get();
             UserDetailsString = user.toString();
-            for (UserAddress address : fetchedUserAddress) {
+            for (Address address : fetchedUserAddress) {
                 UserDetailsString += " \n" + address.toString();
             }
             return UserDetailsString;
@@ -266,7 +287,7 @@ public class UserServiceImpl implements UserService {
 
         User userDetails = userRepository.findByNumber(number);
         if (userDetails != null) {
-            throw new UserExistException("user Already exists");
+            throw new UserExistException("phone number already exists, try login");
         }
     }
 
@@ -280,7 +301,7 @@ public class UserServiceImpl implements UserService {
         User userDetails = userRepository.findByEmail(email);
         if (userDetails != null) {
             System.out.println("user already exists {check your email}");
-            throw new UserExistException("user Already exists");
+            throw new UserExistException("email already exists, try login");
         }
     }
 
