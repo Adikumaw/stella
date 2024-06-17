@@ -12,7 +12,7 @@ import com.nothing.ecommerce.entity.Address;
 import java.util.List;
 
 @Repository
-public interface AddressRepository extends JpaRepository<Address, AddressId> {
+public interface AddressRepository extends JpaRepository<Address, Integer> {
 
     public List<Address> findByUserId(int userId);
 

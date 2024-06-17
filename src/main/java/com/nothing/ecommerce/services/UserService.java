@@ -1,45 +1,30 @@
 package com.nothing.ecommerce.services;
 
-import java.util.List;
-
 import com.nothing.ecommerce.entity.User;
-import com.nothing.ecommerce.entity.Address;
-import com.nothing.ecommerce.model.AddressModel;
-import com.nothing.ecommerce.model.UserModel;
+import com.nothing.ecommerce.model.UserInfoModel;
 
 public interface UserService {
-
     // ----------------------------------------------------------------
     // service methods for user
     // ----------------------------------------------------------------
-    public boolean registerUser(UserModel userModel);
 
-    public User getUser(int userId);
+    int findUserIdByEmail(String email);
 
-    public User updateUserName(int userId, String name);
+    int findUserIdByNumber(String number);
 
-    public User updateUserNumber(int userId, String number);
+    int findUserIdByReference(String reference);
 
-    public User updateUserEmail(int userId, String email);
+    User findByNumber(String number);
 
-    public User updateUserPassword(int userId, String oldPassword, String newPassword);
+    User findByEmail(String email);
 
-    public boolean deactivateUser(int userId);
+    User get(int userId);
 
-    public void removeUser(int userId);
+    User get(String reference);
 
-    // ----------------------------------------------------------------
-    // service methods for User Address
-    // ----------------------------------------------------------------
-    public Address saveAddress(String reference, AddressModel addressModel);
+    User save(User user);
 
-    public List<Address> getUserAddresses(int userId);
+    UserInfoModel getUserInfo(String reference);
 
-    public Address getUserAddress(int userId, String streetAddress);
-
-    public Address updateAddress(String streetAddress,
-            String city, String state, String postalCode, String country, int main, String oldStreetAddress,
-            int userId);
-
-    public void removeAddress(Address address);
+    UserInfoModel convertoInfoModel(User user);
 }

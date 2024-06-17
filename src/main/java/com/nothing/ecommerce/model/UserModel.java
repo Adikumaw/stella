@@ -9,9 +9,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class UserModel {
 
-    private String userName;
+    private String name;
     private String email;
     private String number;
     private String password;
-
+    private int role;
 }

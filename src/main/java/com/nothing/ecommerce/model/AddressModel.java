@@ -15,4 +15,8 @@ public class AddressModel {
     private String postalCode;
     private String country;
     private int main;
+
+    public Boolean isMain() {
+        return this.main != 0 ? true : false;
+    }
 }

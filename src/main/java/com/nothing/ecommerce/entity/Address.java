@@ -4,21 +4,23 @@ import com.nothing.ecommerce.model.AddressModel;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
-@Data
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
-@IdClass(AddressId.class)
 @Table(name = "address")
 public class Address {
     @Id
     @Column(name = "user_id")
     private int userId;
 
-    @Id
     @Column(name = "street_address")
     private String streetAddress;
 
@@ -47,11 +49,7 @@ public class Address {
         this.main = addressModel.getMain();
     }
 
-    @Override
-    public String toString() {
-        return "UserAddress {\n\tuserId=" + userId + ", \n\tstreetAddress=" + streetAddress + ", \n\tcity="
-                + city + ", \n\tstate=" + state + ", \n\tpostalCode=" + postalCode + ", \n\tcountry=" + country
-                + ", \n\tmain=" + main
-                + "\n}";
+    public Boolean isMain() {
+        return this.main != 0 ? true : false;
     }
 }

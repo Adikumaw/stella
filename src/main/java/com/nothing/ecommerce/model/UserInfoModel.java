@@ -1,14 +1,17 @@
 package com.nothing.ecommerce.model;
 
 import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 
-@Data
+@Setter
+@Getter
 @AllArgsConstructor
 @NoArgsConstructor
 public class UserInfoModel {
-    private String userName;
+    private String name;
     private String email;
     private String number;
+    private int status;
 }

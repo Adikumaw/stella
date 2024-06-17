@@ -1,10 +1,9 @@
 package com.nothing.ecommerce.exception;
 
-public class UserExistException extends RuntimeException {
+import lombok.NoArgsConstructor;
 
-    public UserExistException() {
-    }
-
+@NoArgsConstructor
+public class UserExistException extends UserException {
     public UserExistException(String message) {
         super(message);
     }

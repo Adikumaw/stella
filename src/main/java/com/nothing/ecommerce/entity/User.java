@@ -3,11 +3,15 @@ package com.nothing.ecommerce.entity;
 import com.nothing.ecommerce.model.UserModel;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
 
 @Entity
-@Data
+@Getter
+@Setter
+@ToString
 @NoArgsConstructor
 @Table(name = "users")
 public class User {
@@ -20,10 +24,10 @@ public class User {
     @Column(name = "user_name")
     private String name;
 
-    @Column(name = "email")
+    @Column(name = "email", unique = true)
     private String email;
 
-    @Column(name = "number")
+    @Column(name = "number", unique = true)
     private String number;
 
     @Column(name = "password")
@@ -41,21 +45,15 @@ public class User {
     }
 
     public User(UserModel userModel) {
-        this.name = userModel.getUserName();
+        this.name = userModel.getName();
         this.email = userModel.getEmail();
         this.number = userModel.getNumber();
         this.password = userModel.getPassword();
         this.active = 1;
     }
 
-    public int isActive() {
-        return active;
+    public boolean isActive() {
+        return active != 0 ? true : false;
     }
 
-    @Override
-    public String toString() {
-        return "User {\n\tuserId=" + userId + ", \n\tuserName=" + name + ", \n\temail=" + email + ", \n\tnumber="
-                + number
-                + ", \n\tpassword=" + password + ", \n\tactive=" + active + "\n}";
-    }
 }
