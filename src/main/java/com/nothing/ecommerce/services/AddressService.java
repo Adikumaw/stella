@@ -9,30 +9,33 @@ public interface AddressService {
     // ----------------------------------------------------------------
     // RestApi methods for User Address
     // ----------------------------------------------------------------
-    Address saveAddress(int userId, AddressModel addressModel);
 
-    Address saveAddress(String reference, AddressModel addressModel);
+    List<AddressModel> save(int userId, AddressModel addressModel);
 
-    List<Address> getUserAddresses(int userId);
+    List<AddressModel> save(String reference, AddressModel addressModel);
 
-    List<Address> getUserAddresses(String reference);
+    List<Address> getAddresses(int userId);
 
-    Address getUserAddress(int userId, String streetAddress);
+    List<Address> getAddresses(String reference);
 
-    Address getUserAddress(String reference, String streetAddress);
+    List<AddressModel> getAddressModels(int userId);
 
-    Address updateAddress(String streetAddress,
-            String city, String state, String postalCode, String country, int main, String oldStreetAddress,
-            int userId);
+    List<AddressModel> getAddressModels(String reference);
 
-    Address updateAddress(String reference, AddressModel oldAddress, AddressModel newAddress);
+    List<AddressModel> update(String reference, AddressModel oldAddress, AddressModel newAddress);
 
-    void removeAddress(Address address);
+    List<AddressModel> update(int userId, AddressModel oldAddress, AddressModel newAddress);
+
+    List<AddressModel> delete(String reference, AddressModel addressModel);
+
+    List<AddressModel> delete(int userId, AddressModel addressModel);
 
     // ----------------------------------------------------------------
     // service methods for User Address
     // ----------------------------------------------------------------
-    List<Address> findByUserId(int userId);
-
     void delete(Address address);
+
+    Address save(Address address);
+
+    List<AddressModel> convertToAddressModels(List<Address> addresses);
 }

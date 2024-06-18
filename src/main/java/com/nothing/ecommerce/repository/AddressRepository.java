@@ -6,7 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import com.nothing.ecommerce.entity.AddressId;
 import com.nothing.ecommerce.entity.Address;
 
 import java.util.List;
@@ -17,6 +16,9 @@ public interface AddressRepository extends JpaRepository<Address, Integer> {
     public List<Address> findByUserId(int userId);
 
     public Address findByUserIdAndStreetAddress(int userId, String streetAddress);
+
+    public Address findByUserIdAndStreetAddressAndCityAndStateAndPostalCodeAndCountry(int userId, String streetAddress,
+            String city, String state, String postalCode, String country);
 
     @Modifying
     @Query("UPDATE Address ua SET ua.streetAddress = :streetAddress, ua.city = :city, ua.state = :state, ua.postalCode = :postalCode, ua.country = :country, ua.main = :main WHERE ua.streetAddress = :oldStreetAddress AND ua.userId = :userId")

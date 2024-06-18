@@ -95,7 +95,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserInfoModel getUserInfo(String reference) {
+    public UserInfoModel getInfo(String reference) {
         User user = get(reference);
 
         return convertoInfoModel(user);

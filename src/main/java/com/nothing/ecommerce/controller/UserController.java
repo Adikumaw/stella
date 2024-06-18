@@ -16,6 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -36,8 +37,8 @@ public class UserController {
     private JWTService jwtService;
 
     @PostMapping("/register")
-    public ResponseEntity<String> registerUser(@RequestBody UserModel userModel) {
-        userAdvanceService.registerUser(userModel);
+    public ResponseEntity<String> register(@RequestBody UserModel userModel) {
+        userAdvanceService.register(userModel);
 
         return ResponseEntity.status(HttpStatus.OK).body("Success");
     }
@@ -50,8 +51,8 @@ public class UserController {
     }
 
     @GetMapping("/verify-user")
-    public ResponseEntity<String> verifyUser(@RequestParam("token") String token) {
-        boolean isVerified = userAdvanceService.verifyUser(token);
+    public ResponseEntity<String> verify(@RequestParam("token") String token) {
+        boolean isVerified = userAdvanceService.verify(token);
 
         if (isVerified) {
             return ResponseEntity.ok("Email verified successfully!");
@@ -61,8 +62,8 @@ public class UserController {
     }
 
     @GetMapping("/verify-update")
-    public ResponseEntity<String> verifyUserUpdate(@RequestParam("token") String token) {
-        boolean isVerified = userAdvanceService.verifyUserUpdate(token);
+    public ResponseEntity<String> verifyUpdate(@RequestParam("token") String token) {
+        boolean isVerified = userAdvanceService.verifyUpdate(token);
 
         if (isVerified) {
             return ResponseEntity.ok("update verified successfully!");
@@ -72,7 +73,7 @@ public class UserController {
     }
 
     @GetMapping
-    public UserInfoModel getUserInfo(@RequestHeader("Authorization") String jwtHeader) {
+    public UserInfoModel getInfo(@RequestHeader("Authorization") String jwtHeader) {
         if (jwtService.verifyJwtHeader(jwtHeader)) {
             String reference = null;
 
@@ -85,14 +86,14 @@ public class UserController {
                 System.out.println(e.getMessage());
             }
 
-            return userService.getUserInfo(reference);
+            return userService.getInfo(reference);
         } else {
             throw new InvalidJWTHeaderException("invalid JWTHeader !!!");
         }
     }
 
     @PutMapping("/name")
-    public UserInfoModel updateUserName(@RequestBody String name, @RequestHeader("Authorization") String jwtHeader) {
+    public UserInfoModel updateName(@RequestBody String name, @RequestHeader("Authorization") String jwtHeader) {
         if (jwtService.verifyJwtHeader(jwtHeader)) {
             String reference = null;
 
@@ -105,16 +106,14 @@ public class UserController {
                 System.out.println(e.getMessage());
             }
 
-            int userId = userService.findUserIdByReference(reference);
-
-            return userService.convertoInfoModel(userAdvanceService.updateUserName(userId, name));
+            return userService.convertoInfoModel(userAdvanceService.updateName(reference, name));
         } else {
             throw new InvalidJWTHeaderException("invalid JWTHeader !!!");
         }
     }
 
     @PutMapping("/email")
-    public ResponseEntity<String> updateUserEmail(@RequestBody String email,
+    public ResponseEntity<String> updateEmail(@RequestBody String email,
             @RequestHeader("Authorization") String jwtHeader) {
         if (jwtService.verifyJwtHeader(jwtHeader)) {
             String reference = null;
@@ -127,9 +126,8 @@ public class UserController {
                 System.out.println("------------------------->>>>");
                 System.out.println(e.getMessage());
             }
-            int userId = userService.findUserIdByReference(reference);
 
-            userAdvanceService.updateUserEmail(userId, email);
+            userAdvanceService.updateEmail(reference, email);
 
             return ResponseEntity.status(HttpStatus.OK).body("Success");
         } else {
@@ -138,7 +136,7 @@ public class UserController {
     }
 
     @PutMapping("/number")
-    public ResponseEntity<String> updateUserNumber(@RequestBody String number,
+    public ResponseEntity<String> updateNumber(@RequestBody String number,
             @RequestHeader("Authorization") String jwtHeader) {
         if (jwtService.verifyJwtHeader(jwtHeader)) {
             String reference = null;
@@ -151,9 +149,8 @@ public class UserController {
                 System.out.println("------------------------->>>>");
                 System.out.println(e.getMessage());
             }
-            int userId = userService.findUserIdByReference(reference);
 
-            userAdvanceService.updateUserNumber(userId, number);
+            userAdvanceService.updateNumber(reference, number);
 
             return ResponseEntity.status(HttpStatus.OK).body("Success");
         } else {
@@ -162,7 +159,7 @@ public class UserController {
     }
 
     @PutMapping("/password")
-    public ResponseEntity<String> updateUserPassword(@RequestBody UpdatePasswordRequest updateRequest,
+    public ResponseEntity<String> updatePassword(@RequestBody UpdatePasswordRequest updateRequest,
             @RequestHeader("Authorization") String jwtHeader) {
         if (jwtService.verifyJwtHeader(jwtHeader)) {
             String reference = null;
@@ -175,9 +172,8 @@ public class UserController {
                 System.out.println("------------------------->>>>");
                 System.out.println(e.getMessage());
             }
-            int userId = userService.findUserIdByReference(reference);
 
-            userAdvanceService.updateUserPassword(userId, updateRequest.getCurrentPassword(),
+            userAdvanceService.updatePassword(reference, updateRequest.getCurrentPassword(),
                     updateRequest.getNewPassword());
 
             return ResponseEntity.status(HttpStatus.OK).body("Success");
@@ -187,7 +183,7 @@ public class UserController {
     }
 
     @PutMapping("/de-activate")
-    public ResponseEntity<String> deactivateUser(@RequestBody String password,
+    public ResponseEntity<String> deactivate(@RequestBody String password,
             @RequestHeader("Authorization") String jwtHeader) {
         if (jwtService.verifyJwtHeader(jwtHeader)) {
             String reference = null;
@@ -200,9 +196,30 @@ public class UserController {
                 System.out.println("------------------------->>>>");
                 System.out.println(e.getMessage());
             }
-            int userId = userService.findUserIdByReference(reference);
 
-            userAdvanceService.deactivateUser(userId, password);
+            userAdvanceService.deactivate(reference, password);
+
+            return ResponseEntity.status(HttpStatus.OK).body("Success");
+        } else {
+            throw new InvalidJWTHeaderException("invalid JWTHeader !!!");
+        }
+    }
+
+    @DeleteMapping
+    public ResponseEntity<String> delete(@RequestHeader("Authorization") String jwtHeader) {
+        if (jwtService.verifyJwtHeader(jwtHeader)) {
+            String reference = null;
+
+            // extract token from request header
+            String jwtToken = jwtHeader.substring(7);
+            try {
+                reference = jwtService.fetchReference(jwtToken);
+            } catch (Exception e) {
+                System.out.println("------------------------->>>>");
+                System.out.println(e.getMessage());
+            }
+
+            userAdvanceService.delete(reference);
 
             return ResponseEntity.status(HttpStatus.OK).body("Success");
         } else {

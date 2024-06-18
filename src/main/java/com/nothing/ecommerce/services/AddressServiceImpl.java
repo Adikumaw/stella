@@ -1,13 +1,11 @@
 package com.nothing.ecommerce.services;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.nothing.ecommerce.entity.Address;
-import com.nothing.ecommerce.exception.AddressNotFoundException;
 import com.nothing.ecommerce.model.AddressModel;
 import com.nothing.ecommerce.repository.AddressRepository;
 
@@ -20,14 +18,15 @@ public class AddressServiceImpl implements AddressService {
     private UserService userService;
 
     // ----------------------------------------------------------------
-    // service methods for User Address
+    // Api methods for User Address
     // ----------------------------------------------------------------
+
     @Override
-    public Address saveAddress(String reference, AddressModel addressModel) {
+    public List<AddressModel> save(String reference, AddressModel addressModel) {
         // fetch userId
         int userId = userService.findUserIdByReference(reference);
 
-        List<Address> addresses = getUserAddresses(userId);
+        List<Address> addresses = getAddresses(userId);
 
         // removing main from other addresses
         if (addressModel.isMain()) {
@@ -40,12 +39,14 @@ public class AddressServiceImpl implements AddressService {
         }
 
         Address address = new Address(userId, addressModel);
-        return addressRepository.save(address);
+        addressRepository.save(address);
+
+        return getAddressModels(userId);
     }
 
     @Override
-    public Address saveAddress(int userId, AddressModel addressModel) {
-        List<Address> addresses = getUserAddresses(userId);
+    public List<AddressModel> save(int userId, AddressModel addressModel) {
+        List<Address> addresses = getAddresses(userId);
 
         // removing main from other addresses
         if (addressModel.isMain()) {
@@ -58,109 +59,183 @@ public class AddressServiceImpl implements AddressService {
         }
 
         Address address = new Address(userId, addressModel);
-        return addressRepository.save(address);
+        addressRepository.save(address);
+
+        return getAddressModels(userId);
     }
 
     @Override
-    public List<Address> getUserAddresses(int userId) {
-        List<Address> fetchedUserAddress = addressRepository.findByUserId(userId);
-        if (fetchedUserAddress != null) {
-            return fetchedUserAddress;
+    public List<AddressModel> convertToAddressModels(List<Address> addresses) {
+        List<AddressModel> addressModels = new ArrayList<AddressModel>();
+        for (Address address : addresses) {
+            addressModels.add(new AddressModel(address));
+        }
+        return addressModels;
+    }
+
+    @Override
+    public List<Address> getAddresses(int userId) {
+        List<Address> addresses = addressRepository.findByUserId(userId);
+        if (addresses != null) {
+            return addresses;
         }
         return null;
     }
 
     @Override
-    public List<Address> getUserAddresses(String reference) {
+    public List<Address> getAddresses(String reference) {
         int userId = userService.findUserIdByReference(reference);
-        List<Address> fetchedUserAddress = addressRepository.findByUserId(userId);
-        if (fetchedUserAddress != null) {
-            return fetchedUserAddress;
+        List<Address> addresses = addressRepository.findByUserId(userId);
+        if (addresses != null) {
+            return addresses;
         }
         return null;
     }
 
     @Override
-    public Address getUserAddress(int userId, String streetAddress) {
-        Address fetchedUserAddress = addressRepository.findByUserIdAndStreetAddress(userId, streetAddress);
-        if (fetchedUserAddress != null) {
-            return fetchedUserAddress;
-        }
-        return null;
+    public List<AddressModel> getAddressModels(int userId) {
+        return convertToAddressModels(getAddresses(userId));
     }
 
     @Override
-    public Address getUserAddress(String reference, String streetAddress) {
-        int userId = userService.findUserIdByReference(reference);
-
-        Address fetchedUserAddress = addressRepository.findByUserIdAndStreetAddress(userId, streetAddress);
-        if (fetchedUserAddress != null) {
-            return fetchedUserAddress;
-        }
-        return null;
+    public List<AddressModel> getAddressModels(String reference) {
+        return convertToAddressModels(getAddresses(reference));
     }
 
     @Override
-    @Transactional
-    public Address updateAddress(String streetAddress,
-            String city, String state, String postalCode, String country, int main, String oldStreetAddress,
-            int userId) {
-        Address address = addressRepository.findByUserIdAndStreetAddress(userId, oldStreetAddress);
-        if (address != null) {
-            addressRepository.updateUserAddress(userId, streetAddress, city, state, postalCode, country, main,
-                    oldStreetAddress);
+    public List<AddressModel> update(int userId, AddressModel oldAddress, AddressModel newAddress) {
+        List<Address> addresses = getAddresses(userId);
 
-            Address updatedAddress = addressRepository.findByUserIdAndStreetAddress(userId, streetAddress);
-            return updatedAddress;
+        for (Address address : addresses) {
+            if (address.equals(oldAddress)) {
+                if (!newAddress.getStreetAddress().isEmpty()) {
+                    address.setStreetAddress(newAddress.getStreetAddress());
+                }
+                if (!newAddress.getCity().isEmpty()) {
+                    address.setCity(newAddress.getCity());
+                }
+                if (!newAddress.getState().isEmpty()) {
+                    address.setState(newAddress.getState());
+                }
+                if (!newAddress.getPostalCode().isEmpty()) {
+                    address.setPostalCode(newAddress.getPostalCode());
+                }
+                if (!newAddress.getCountry().isEmpty()) {
+                    address.setCountry(newAddress.getCountry());
+                }
+                if (newAddress.isMain()) {
+                    for (Address a : addresses) {
+                        if (a.isMain()) {
+                            a.setMain(0);
+                            save(a);
+                        }
+                    }
+                    address.setMain(1);
+                }
+                save(address);
+                break;
+            }
         }
-        return null;
+        return getAddressModels(userId);
     };
 
     @Override
-    @Transactional
-    public Address updateAddress(String reference, AddressModel oldAddress, AddressModel newAddress) {
+    public List<AddressModel> update(String reference, AddressModel oldAddress, AddressModel newAddress) {
         int userId = userService.findUserIdByReference(reference);
 
-        
-        Address address = addressRepository.findByUserIdAndStreetAddress(userId, oldStreetAddress);
-        if (address != null) {
-            addressRepository.updateUserAddress(userId, streetAddress, city, state, postalCode, country, main,
-                    oldStreetAddress);
+        List<Address> addresses = getAddresses(userId);
 
-            Address updatedAddress = addressRepository.findByUserIdAndStreetAddress(userId, streetAddress);
-            return updatedAddress;
+        for (Address address : addresses) {
+            if (address.equals(oldAddress)) {
+                if (!newAddress.getStreetAddress().isEmpty()) {
+                    address.setStreetAddress(newAddress.getStreetAddress());
+                }
+                if (!newAddress.getCity().isEmpty()) {
+                    address.setCity(newAddress.getCity());
+                }
+                if (!newAddress.getState().isEmpty()) {
+                    address.setState(newAddress.getState());
+                }
+                if (!newAddress.getPostalCode().isEmpty()) {
+                    address.setPostalCode(newAddress.getPostalCode());
+                }
+                if (!newAddress.getCountry().isEmpty()) {
+                    address.setCountry(newAddress.getCountry());
+                }
+                if (newAddress.isMain() && !oldAddress.isMain()) {
+                    for (Address a : addresses) {
+                        if (a.isMain()) {
+                            a.setMain(0);
+                            save(a);
+                        }
+                    }
+                    address.setMain(1);
+                }
+                save(address);
+                break;
+            }
         }
-        return null;
-    };
+        return getAddressModels(userId);
+    }
 
     @Override
-    public void removeAddress(Address address) {
-        Address userAddress = addressRepository.findByUserIdAndStreetAddress(address.getUserId(),
-                address.getStreetAddress());
-        if (userAddress != null) {
-            addressRepository.delete(userAddress);
-            // check the deleted userAddress is main and add main to next userAddress if it
-            // exists
-            if (userAddress.getMain() == 1) {
-                List<Address> addresses = addressRepository.findByUserId(address.getUserId());
-                if (addresses != null) {
-                    Address newPrimaryAddress = addresses.get(0);
-                    newPrimaryAddress.setMain(1);
-                    addressRepository.save(newPrimaryAddress);
+    public List<AddressModel> delete(String reference, AddressModel addressModel) {
+        int userId = userService.findUserIdByReference(reference);
+
+        List<Address> addresses = getAddresses(userId);
+
+        for (Address address : addresses) {
+            if (address.equals(addressModel)) {
+                delete(address);
+                // change main address
+                if (address.isMain()) {
+                    List<Address> addresses_2 = getAddresses(userId);
+                    if (addresses_2.size() > 0) {
+                        Address addr = addresses_2.get(0);
+                        addr.setMain(1);
+                        save(addr);
+                    }
                 }
             }
-        } else {
-            throw new AddressNotFoundException("Address not found for user " + address.getUserId());
         }
+
+        return getAddressModels(userId);
     }
 
     @Override
-    public List<Address> findByUserId(int userId) {
-        return addressRepository.findByUserId(userId);
+    public List<AddressModel> delete(int userId, AddressModel addressModel) {
+
+        List<Address> addresses = getAddresses(userId);
+
+        for (Address address : addresses) {
+            if (address.equals(addressModel)) {
+                delete(address);
+                // change main address
+                if (address.isMain()) {
+                    List<Address> addresses_2 = getAddresses(userId);
+                    if (addresses_2.size() > 0) {
+                        Address addr = addresses_2.get(0);
+                        addr.setMain(1);
+                        save(addr);
+                    }
+                }
+            }
+        }
+
+        return getAddressModels(userId);
+    }
+
+    // ----------------------------------------------------------------
+    // service methods for User Address
+    // ----------------------------------------------------------------
+    @Override
+    public Address save(Address address) {
+        return addressRepository.save(address);
     }
 
     @Override
     public void delete(Address address) {
         addressRepository.delete(address);
     }
+
 }

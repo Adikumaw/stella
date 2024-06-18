@@ -1,5 +1,7 @@
 package com.nothing.ecommerce.model;
 
+import com.nothing.ecommerce.entity.Address;
+
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -15,6 +17,15 @@ public class AddressModel {
     private String postalCode;
     private String country;
     private int main;
+
+    public AddressModel(Address address) {
+        this.streetAddress = address.getStreetAddress();
+        this.city = address.getCity();
+        this.state = address.getState();
+        this.postalCode = address.getPostalCode();
+        this.country = address.getCountry();
+        this.main = address.getMain();
+    }
 
     public Boolean isMain() {
         return this.main != 0 ? true : false;

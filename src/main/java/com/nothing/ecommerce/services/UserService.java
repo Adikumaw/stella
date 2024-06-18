@@ -24,7 +24,7 @@ public interface UserService {
 
     User save(User user);
 
-    UserInfoModel getUserInfo(String reference);
+    UserInfoModel getInfo(String reference);
 
     UserInfoModel convertoInfoModel(User user);
 }

@@ -18,6 +18,10 @@ import lombok.ToString;
 @Table(name = "address")
 public class Address {
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id")
+    private int id;
+
     @Column(name = "user_id")
     private int userId;
 
@@ -47,6 +51,14 @@ public class Address {
         this.postalCode = addressModel.getPostalCode();
         this.country = addressModel.getCountry();
         this.main = addressModel.getMain();
+    }
+
+    public Boolean equals(AddressModel addressModel) {
+        return this.streetAddress.equals(addressModel.getStreetAddress())
+                && this.city.equals(addressModel.getCity())
+                && this.state.equals(addressModel.getState())
+                && this.postalCode.equals(addressModel.getPostalCode())
+                && this.country.equals(addressModel.getCountry());
     }
 
     public Boolean isMain() {

@@ -49,7 +49,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
     // ----------------------------------------------------------------
 
     @Override
-    public boolean registerUser(UserModel userModel) {
+    public boolean register(UserModel userModel) {
         // vrify user details
         verifyUserDetails(userModel);
 
@@ -82,7 +82,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
     }
 
     @Override
-    public boolean verifyUser(String token) {
+    public boolean verify(String token) {
         // fetch token from Database
         VerificationToken verificationToken = verificationTokenService.findByToken(token);
         // check if token exist and not expired
@@ -100,7 +100,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
     }
 
     @Override
-    public boolean verifyUserUpdate(String token) {
+    public boolean verifyUpdate(String token) {
         // fetch token from Database
         UpdateVerificationToken updateVerificationToken = updateVerificationTokenService.findByToken(token);
         // check if token exist and not expired
@@ -134,7 +134,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
     }
 
     @Override
-    public User updateUserName(int userId, String name) {
+    public User updateName(int userId, String name) {
         User fetchedUser = userService.get(userId);
         if (fetchedUser != null) {
             fetchedUser.setName(name);
@@ -144,7 +144,19 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
     }
 
     @Override
-    public void updateUserNumber(int userId, String number) {
+    public User updateName(String reference, String name) {
+        int userId = userService.findUserIdByReference(reference);
+
+        User fetchedUser = userService.get(userId);
+        if (fetchedUser != null) {
+            fetchedUser.setName(name);
+            return userRepository.save(fetchedUser);
+        }
+        return null;
+    }
+
+    @Override
+    public void updateNumber(int userId, String number) {
         // check if number is already userd or not
         try {
             userService.get(number); // it will throw exception if user not found ...
@@ -155,7 +167,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
             if (user != null && verifyNumber) {
                 // Generate Verification Token
                 UpdateVerificationToken updateVerificationToken = updateVerificationTokenService.generate(
-                        user.getUserId(),
+                        userId,
                         number);
 
                 // send verification email
@@ -165,7 +177,28 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
     }
 
     @Override
-    public void updateUserEmail(int userId, String email) {
+    public void updateNumber(String reference, String number) {
+        int userId = userService.findUserIdByReference(reference);
+        // check if number is already userd or not
+        try {
+            userService.get(number); // it will throw exception if user not found ...
+            throw new UserExistException("number is already used");
+        } catch (UserNotFoundException exc) {
+            User user = userService.get(userId);
+            boolean verifyNumber = Miscellaneous.isValidNumber(number);
+            if (user != null && verifyNumber) {
+                // Generate Verification Token
+                UpdateVerificationToken updateVerificationToken = updateVerificationTokenService.generate(
+                        userId,
+                        number);
+                // send verification email
+                updateVerificationTokenService.sender(user, updateVerificationToken);
+            }
+        }
+    }
+
+    @Override
+    public void updateEmail(int userId, String email) {
         // check if email is already userd or not
         try {
             userService.get(email); // it will throw exception if user not found ...
@@ -175,7 +208,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
             if (user != null && verifyEmail) {
                 // Generate Verification Token
                 UpdateVerificationToken updateVerificationToken = updateVerificationTokenService.generate(
-                        user.getUserId(),
+                        userId,
                         email);
 
                 // send verification email
@@ -185,7 +218,28 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
     }
 
     @Override
-    public void updateUserPassword(int userId, String oldPassword, String newPassword) {
+    public void updateEmail(String reference, String email) {
+        int userId = userService.findUserIdByReference(reference);
+        // check if email is already userd or not
+        try {
+            userService.get(email); // it will throw exception if user not found ...
+        } catch (UserNotFoundException exc) {
+            User user = userService.get(userId);
+            boolean verifyEmail = Miscellaneous.isValidEmail(email);
+            if (user != null && verifyEmail) {
+                // Generate Verification Token
+                UpdateVerificationToken updateVerificationToken = updateVerificationTokenService.generate(
+                        userId,
+                        email);
+
+                // send verification email
+                updateVerificationTokenService.sender(user, updateVerificationToken);
+            }
+        }
+    }
+
+    @Override
+    public void updatePassword(int userId, String oldPassword, String newPassword) {
         // fetch user information
         User user = userService.get(userId);
         if (user != null) {
@@ -206,11 +260,35 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
                 throw new WrongPasswordException("Wrong Password");
             }
         }
-
     }
 
     @Override
-    public boolean deactivateUser(int userId, String password) {
+    public void updatePassword(String reference, String oldPassword, String newPassword) {
+        int userId = userService.findUserIdByReference(reference);
+        // fetch user information
+        User user = userService.get(userId);
+        if (user != null) {
+            // verify olf password
+            boolean verifyOldPassword = passwordEncoder.matches(oldPassword, user.getPassword());
+            if (verifyOldPassword) {
+                // verify new password
+                if (Miscellaneous.isValidPassword(newPassword)) {
+                    // Hash new password ...
+                    String encryptedPassword = passwordEncoder.encode(newPassword);
+                    user.setPassword(encryptedPassword);
+                    // save new password to user
+                    userRepository.save(user);
+                } else {
+                    throw new WeakPasswordException("password is not strong");
+                }
+            } else {
+                throw new WrongPasswordException("Wrong Password");
+            }
+        }
+    }
+
+    @Override
+    public boolean deactivate(int userId, String password) {
         User user = userService.get(userId);
         if (user != null) {
             boolean verifyPassword = passwordEncoder.matches(password, user.getPassword());
@@ -229,31 +307,54 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
     }
 
     @Override
-    public boolean activateUser(int userId) {
-        User fetchedUser = userService.get(userId);
-        if (fetchedUser != null) {
-            if (!fetchedUser.isActive()) {
-                fetchedUser.setActive(1);
-                return userRepository.save(fetchedUser) != null;
+    public boolean deactivate(String reference, String password) {
+        int userId = userService.findUserIdByReference(reference);
+
+        User user = userService.get(userId);
+        if (user != null) {
+            boolean verifyPassword = passwordEncoder.matches(password, user.getPassword());
+            if (verifyPassword) {
+                if (user.isActive()) {
+                    user.setActive(0);
+                    return userRepository.save(user) != null;
+                } else {
+                    throw new UserException("User is already deactivated");
+                }
             } else {
-                throw new UserException("User is already activated");
+                throw new WrongPasswordException("Wrong Password");
             }
         }
         return false;
     }
 
     @Override
-    public void removeUser(int userId) {
+    public void delete(int userId) {
         // NOTE: remove all the data from tables related to this user before removing
         // the user
         // removing user addresses
         User user = userService.get(userId);
         if (user != null) {
-            List<Address> addresses = addressService.findByUserId(userId);
+            List<Address> addresses = addressService.getAddresses(userId);
             for (Address address : addresses) {
                 addressService.delete(address);
             }
 
+            userRepository.delete(user);
+        }
+    }
+
+    @Override
+    public void delete(String reference) {
+        int userId = userService.findUserIdByReference(reference);
+        // NOTE: remove all the data from tables related to this user before removing
+        // the user
+        // removing user addresses
+        User user = userService.get(userId);
+        if (user != null) {
+            List<Address> addresses = addressService.getAddresses(userId);
+            for (Address address : addresses) {
+                addressService.delete(address);
+            }
             userRepository.delete(user);
         }
     }
@@ -268,7 +369,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
 
         // fetch the user
         Optional<User> fetchedUser = userRepository.findById(userId);
-        List<Address> fetchedUserAddress = addressService.findByUserId(userId);
+        List<Address> fetchedUserAddress = addressService.getAddresses(userId);
 
         if (fetchedUser.isPresent()) {
             user = fetchedUser.get();

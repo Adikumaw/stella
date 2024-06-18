@@ -9,23 +9,33 @@ public interface UserAdvanceService {
     // RestApi methods for user
     // ----------------------------------------------------------------
 
-    boolean registerUser(UserModel userModel);
+    boolean register(UserModel userModel);
 
-    boolean verifyUser(String token);
+    boolean verify(String token);
 
-    boolean verifyUserUpdate(String token);
+    boolean verifyUpdate(String token);
 
-    User updateUserName(int userId, String name);
+    User updateName(int userId, String name);
 
-    void updateUserNumber(int userId, String number);
+    User updateName(String reference, String name);
 
-    void updateUserEmail(int userId, String email);
+    void updateNumber(int userId, String number);
 
-    void updateUserPassword(int userId, String oldPassword, String newPassword);
+    void updateNumber(String reference, String number);
 
-    boolean deactivateUser(int userId, String password);
+    void updateEmail(int userId, String email);
 
-    boolean activateUser(int userId);
+    void updateEmail(String reference, String email);
 
-    void removeUser(int userId);
+    void updatePassword(int userId, String oldPassword, String newPassword);
+
+    void updatePassword(String reference, String oldPassword, String newPassword);
+
+    boolean deactivate(int userId, String password);
+
+    boolean deactivate(String reference, String password);
+
+    void delete(int userId);
+
+    void delete(String reference);
 }
