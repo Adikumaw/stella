@@ -51,7 +51,7 @@ public class UserController {
     }
 
     @GetMapping("/verify-user")
-    public ResponseEntity<String> verify(@RequestParam("token") String token) {
+    public ResponseEntity<String> verify(@RequestParam String token) {
         boolean isVerified = userAdvanceService.verify(token);
 
         if (isVerified) {
@@ -62,7 +62,7 @@ public class UserController {
     }
 
     @GetMapping("/verify-update")
-    public ResponseEntity<String> verifyUpdate(@RequestParam("token") String token) {
+    public ResponseEntity<String> verifyUpdate(@RequestParam String token) {
         boolean isVerified = userAdvanceService.verifyUpdate(token);
 
         if (isVerified) {
@@ -75,18 +75,17 @@ public class UserController {
     @GetMapping
     public UserInfoModel getInfo(@RequestHeader("Authorization") String jwtHeader) {
         if (jwtService.verifyJwtHeader(jwtHeader)) {
-            String reference = null;
-
             // extract token from request header
             String jwtToken = jwtHeader.substring(7);
             try {
-                reference = jwtService.fetchReference(jwtToken);
+                String reference = jwtService.fetchReference(jwtToken);
+
+                return userService.getInfo(reference);
             } catch (Exception e) {
                 System.out.println("------------------------->>>>");
                 System.out.println(e.getMessage());
+                throw e;
             }
-
-            return userService.getInfo(reference);
         } else {
             throw new InvalidJWTHeaderException("invalid JWTHeader !!!");
         }
@@ -95,18 +94,17 @@ public class UserController {
     @PutMapping("/name")
     public UserInfoModel updateName(@RequestBody String name, @RequestHeader("Authorization") String jwtHeader) {
         if (jwtService.verifyJwtHeader(jwtHeader)) {
-            String reference = null;
-
             // extract token from request header
             String jwtToken = jwtHeader.substring(7);
             try {
-                reference = jwtService.fetchReference(jwtToken);
+                String reference = jwtService.fetchReference(jwtToken);
+
+                return userService.convertoInfoModel(userAdvanceService.updateName(reference, name));
             } catch (Exception e) {
                 System.out.println("------------------------->>>>");
                 System.out.println(e.getMessage());
+                throw e;
             }
-
-            return userService.convertoInfoModel(userAdvanceService.updateName(reference, name));
         } else {
             throw new InvalidJWTHeaderException("invalid JWTHeader !!!");
         }
@@ -116,20 +114,20 @@ public class UserController {
     public ResponseEntity<String> updateEmail(@RequestBody String email,
             @RequestHeader("Authorization") String jwtHeader) {
         if (jwtService.verifyJwtHeader(jwtHeader)) {
-            String reference = null;
-
             // extract token from request header
             String jwtToken = jwtHeader.substring(7);
             try {
-                reference = jwtService.fetchReference(jwtToken);
+                String reference = jwtService.fetchReference(jwtToken);
+
+                userAdvanceService.updateEmail(reference, email);
+
+                return ResponseEntity.status(HttpStatus.OK).body("Success");
+
             } catch (Exception e) {
                 System.out.println("------------------------->>>>");
                 System.out.println(e.getMessage());
+                throw e;
             }
-
-            userAdvanceService.updateEmail(reference, email);
-
-            return ResponseEntity.status(HttpStatus.OK).body("Success");
         } else {
             throw new InvalidJWTHeaderException("invalid JWTHeader !!!");
         }
@@ -139,20 +137,20 @@ public class UserController {
     public ResponseEntity<String> updateNumber(@RequestBody String number,
             @RequestHeader("Authorization") String jwtHeader) {
         if (jwtService.verifyJwtHeader(jwtHeader)) {
-            String reference = null;
-
             // extract token from request header
             String jwtToken = jwtHeader.substring(7);
             try {
-                reference = jwtService.fetchReference(jwtToken);
+                String reference = jwtService.fetchReference(jwtToken);
+
+                userAdvanceService.updateNumber(reference, number);
+
+                return ResponseEntity.status(HttpStatus.OK).body("Success");
+
             } catch (Exception e) {
                 System.out.println("------------------------->>>>");
                 System.out.println(e.getMessage());
+                throw e;
             }
-
-            userAdvanceService.updateNumber(reference, number);
-
-            return ResponseEntity.status(HttpStatus.OK).body("Success");
         } else {
             throw new InvalidJWTHeaderException("invalid JWTHeader !!!");
         }
@@ -162,21 +160,21 @@ public class UserController {
     public ResponseEntity<String> updatePassword(@RequestBody UpdatePasswordRequest updateRequest,
             @RequestHeader("Authorization") String jwtHeader) {
         if (jwtService.verifyJwtHeader(jwtHeader)) {
-            String reference = null;
-
             // extract token from request header
             String jwtToken = jwtHeader.substring(7);
             try {
-                reference = jwtService.fetchReference(jwtToken);
+                String reference = jwtService.fetchReference(jwtToken);
+
+                userAdvanceService.updatePassword(reference, updateRequest.getCurrentPassword(),
+                        updateRequest.getNewPassword());
+
+                return ResponseEntity.status(HttpStatus.OK).body("Success");
+
             } catch (Exception e) {
                 System.out.println("------------------------->>>>");
                 System.out.println(e.getMessage());
+                throw e;
             }
-
-            userAdvanceService.updatePassword(reference, updateRequest.getCurrentPassword(),
-                    updateRequest.getNewPassword());
-
-            return ResponseEntity.status(HttpStatus.OK).body("Success");
         } else {
             throw new InvalidJWTHeaderException("invalid JWTHeader !!!");
         }
@@ -186,20 +184,20 @@ public class UserController {
     public ResponseEntity<String> deactivate(@RequestBody String password,
             @RequestHeader("Authorization") String jwtHeader) {
         if (jwtService.verifyJwtHeader(jwtHeader)) {
-            String reference = null;
-
             // extract token from request header
             String jwtToken = jwtHeader.substring(7);
             try {
-                reference = jwtService.fetchReference(jwtToken);
+                String reference = jwtService.fetchReference(jwtToken);
+
+                userAdvanceService.deactivate(reference, password);
+
+                return ResponseEntity.status(HttpStatus.OK).body("Success");
+
             } catch (Exception e) {
                 System.out.println("------------------------->>>>");
                 System.out.println(e.getMessage());
+                throw e;
             }
-
-            userAdvanceService.deactivate(reference, password);
-
-            return ResponseEntity.status(HttpStatus.OK).body("Success");
         } else {
             throw new InvalidJWTHeaderException("invalid JWTHeader !!!");
         }
@@ -208,20 +206,20 @@ public class UserController {
     @DeleteMapping
     public ResponseEntity<String> delete(@RequestHeader("Authorization") String jwtHeader) {
         if (jwtService.verifyJwtHeader(jwtHeader)) {
-            String reference = null;
-
             // extract token from request header
             String jwtToken = jwtHeader.substring(7);
             try {
-                reference = jwtService.fetchReference(jwtToken);
+                String reference = jwtService.fetchReference(jwtToken);
+
+                userAdvanceService.delete(reference);
+
+                return ResponseEntity.status(HttpStatus.OK).body("Success");
+
             } catch (Exception e) {
                 System.out.println("------------------------->>>>");
                 System.out.println(e.getMessage());
+                throw e;
             }
-
-            userAdvanceService.delete(reference);
-
-            return ResponseEntity.status(HttpStatus.OK).body("Success");
         } else {
             throw new InvalidJWTHeaderException("invalid JWTHeader !!!");
         }

@@ -5,7 +5,6 @@ import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -33,8 +32,11 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         // Verify that the user is Active
         if (!user.isActive()) {
-            throw new DisabledException("User not Active with Reference : " +
-                    reference);
+            // throw new DisabledException("User not Active with Reference : " +
+            // reference);
+            user.setActive(1);
+            userService.save(user);
+            return loadUserByUsername(reference);
         }
         // Fetch User Roles
         List<Roles> roles = rolesRepository.findByUserId(user.getUserId());

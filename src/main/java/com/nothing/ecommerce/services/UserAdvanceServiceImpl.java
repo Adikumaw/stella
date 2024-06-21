@@ -66,9 +66,9 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
         // create new userRole from user model > role
         Roles roles = new Roles();
         roles.setUserId(user.getUserId());
-        if (userModel.getRole() == 1) {
+        if (userModel.getRole().equalsIgnoreCase("BUYER")) {
             roles.setRole("ROLE_BUYER");
-        } else if (userModel.getRole() == 2) {
+        } else if (userModel.getRole().equalsIgnoreCase("SELLER")) {
             roles.setRole("ROLE_SELLER");
         }
         rolesRepository.save(roles);
@@ -395,7 +395,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
         String email = userModel.getEmail();
         String number = userModel.getNumber();
         String password = userModel.getPassword();
-        int role = userModel.getRole();
+        String role = userModel.getRole();
 
         // checking user name
         if (name == null || name == "") {
@@ -416,7 +416,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
             throw new WeakPasswordException("password is not strong !!!");
         }
         // checking user Role
-        if (role < 1 || role > 2) {
+        if (!role.equalsIgnoreCase("BUYER") && !role.equalsIgnoreCase("SELLER")) {
             throw new IllegalRoleException("You cannot register a user with this role");
         }
     }
