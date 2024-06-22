@@ -3,8 +3,8 @@ package com.nothing.ecommerce.exception;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class AddressNotFoundException extends UserException {
-    public AddressNotFoundException(String message) {
+public class UnknownErrorException extends RuntimeException {
+    public UnknownErrorException(String message) {
         super(message);
     }
 }

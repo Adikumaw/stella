@@ -1,7 +1,7 @@
 package com.nothing.ecommerce.services;
 
 import com.nothing.ecommerce.entity.User;
-import com.nothing.ecommerce.model.UserInfoModel;
+import com.nothing.ecommerce.model.UserViewModel;
 
 public interface UserService {
     // ----------------------------------------------------------------
@@ -24,7 +24,7 @@ public interface UserService {
 
     User save(User user);
 
-    UserInfoModel getInfo(String reference);
+    UserViewModel getInfo(String reference);
 
-    UserInfoModel convertoInfoModel(User user);
+    UserViewModel converToViewModel(User user);
 }

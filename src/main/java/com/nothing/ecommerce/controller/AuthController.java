@@ -1,5 +1,7 @@
 package com.nothing.ecommerce.controller;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nothing.ecommerce.entity.User;
+import com.nothing.ecommerce.exception.UnknownErrorException;
 import com.nothing.ecommerce.model.JWTRequest;
 import com.nothing.ecommerce.model.JWTResponse;
 import com.nothing.ecommerce.security.CustomUserDetailsService;
@@ -35,6 +38,8 @@ public class AuthController {
     @Autowired
     private UserService userService;
 
+    private static final Logger logger = LoggerFactory.getLogger(AuthController.class);
+
     @PostMapping("/login")
     public ResponseEntity<JWTResponse> login(@RequestBody JWTRequest request) {
         // Authenticate username and password
@@ -44,12 +49,16 @@ public class AuthController {
         try {
             userDetails = customUserDetailsService.loadUserByUsername(request.getReference());
         } catch (DisabledException e) {
+            logger.warn("User is Disabled: ", e.getMessage());
             // set user Active
             User user = userService.get(request.getReference());
             user.setActive(1);
             userService.save(user);
 
             return login(request);
+        } catch (Exception e) {
+            logger.error("Unknown error: ", e.getMessage(), e);
+            throw new UnknownErrorException("Error: unknown error");
         }
         // generate Jwt token
         String token = jwtService.generateToken(userDetails);
@@ -67,7 +76,7 @@ public class AuthController {
         try {
             authenticationManager.authenticate(authentication);
         } catch (BadCredentialsException e) {
-            throw new BadCredentialsException("Invalid Username or Password !!");
+            throw new BadCredentialsException("Error: Invalid Username or Password !!");
         }
     }
 }

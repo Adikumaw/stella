@@ -2,6 +2,8 @@ package com.nothing.ecommerce.controller;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -13,6 +15,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nothing.ecommerce.exception.InvalidJWTHeaderException;
+import com.nothing.ecommerce.exception.UnknownErrorException;
+import com.nothing.ecommerce.exception.UserException;
 import com.nothing.ecommerce.model.AddressModel;
 import com.nothing.ecommerce.model.AddressUpdateRequest;
 import com.nothing.ecommerce.services.AddressService;
@@ -27,6 +31,8 @@ public class AddressController {
     @Autowired
     private AddressService addressService;
 
+    private static final Logger logger = LoggerFactory.getLogger(AddressController.class);
+
     @PostMapping
     public List<AddressModel> save(@RequestBody AddressModel addressModel,
             @RequestHeader("Authorization") String jwtHeader) {
@@ -37,14 +43,17 @@ public class AddressController {
             String jwtToken = jwtHeader.substring(7);
             try {
                 reference = jwtService.fetchReference(jwtToken);
+                return addressService.save(reference, addressModel);
+            } catch (IllegalArgumentException e) {
+                throw e;
+            } catch (UserException e) {
+                throw e;
             } catch (Exception e) {
-                System.out.println("------------------------->>>>");
-                System.out.println(e.getMessage());
+                logger.error("Unknown error: " + e.getMessage(), e);
+                throw new UnknownErrorException("Error: unknown error");
             }
-
-            return addressService.save(reference, addressModel);
         } else {
-            throw new InvalidJWTHeaderException("invalid JWTHeader !!!");
+            throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
         }
     }
 
@@ -57,14 +66,18 @@ public class AddressController {
             String jwtToken = jwtHeader.substring(7);
             try {
                 reference = jwtService.fetchReference(jwtToken);
+            } catch (IllegalArgumentException e) {
+                throw e;
+            } catch (UserException e) {
+                throw e;
             } catch (Exception e) {
-                System.out.println("------------------------->>>>");
-                System.out.println(e.getMessage());
+                logger.error("Unknown error: " + e.getMessage(), e);
+                throw new UnknownErrorException("Error: unknown error");
             }
 
             return addressService.getAddressModels(reference);
         } else {
-            throw new InvalidJWTHeaderException("invalid JWTHeader!!!");
+            throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
         }
     }
 
@@ -78,9 +91,13 @@ public class AddressController {
             String jwtToken = jwtHeader.substring(7);
             try {
                 reference = jwtService.fetchReference(jwtToken);
+            } catch (IllegalArgumentException e) {
+                throw e;
+            } catch (UserException e) {
+                throw e;
             } catch (Exception e) {
-                System.out.println("------------------------->>>>");
-                System.out.println(e.getMessage());
+                logger.error("Unknown error: " + e.getMessage(), e);
+                throw new UnknownErrorException("Error: unknown error");
             }
 
             AddressModel oldAddress = request.getOldAddress();
@@ -93,11 +110,11 @@ public class AddressController {
                     return addressService.getAddressModels(reference);
                 }
             } else {
-                throw new IllegalArgumentException("wrong address..");
+                throw new IllegalArgumentException("Error: Wrong Address");
             }
 
         } else {
-            throw new InvalidJWTHeaderException("invalid JWTHeader!!!");
+            throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
         }
     }
 
@@ -111,14 +128,18 @@ public class AddressController {
             String jwtToken = jwtHeader.substring(7);
             try {
                 reference = jwtService.fetchReference(jwtToken);
+            } catch (IllegalArgumentException e) {
+                throw e;
+            } catch (UserException e) {
+                throw e;
             } catch (Exception e) {
-                System.out.println("------------------------->>>>");
-                System.out.println(e.getMessage());
+                logger.error("Unknown error: " + e.getMessage(), e);
+                throw new UnknownErrorException("Error: unknown error");
             }
 
             return addressService.delete(reference, addressModel);
         } else {
-            throw new InvalidJWTHeaderException("invalid JWTHeader!!!");
+            throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
         }
     }
 

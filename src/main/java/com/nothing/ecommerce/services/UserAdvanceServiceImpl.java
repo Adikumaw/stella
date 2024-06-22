@@ -3,6 +3,8 @@ package com.nothing.ecommerce.services;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -43,6 +45,8 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
     private VerificationTokenService verificationTokenService;
     @Autowired
     private UpdateVerificationTokenService updateVerificationTokenService;
+
+    private static final Logger logger = LoggerFactory.getLogger(UserAdvanceServiceImpl.class);
 
     // ----------------------------------------------------------------
     // service methods for user
@@ -126,9 +130,9 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
         try {
             updateVerificationTokenService.delete(updateVerificationToken);
         } catch (InvalidDataAccessApiUsageException e) {
-            System.out.println(e.getMessage());
+            logger.error("Error deleting verification token: " + e.getMessage(), e);
         } catch (Exception e) {
-            e.printStackTrace();
+            logger.error("Unknown error: " + e.getMessage(), e);
         }
         return false;
     }
@@ -160,7 +164,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
         // check if number is already userd or not
         try {
             userService.get(number); // it will throw exception if user not found ...
-            throw new UserExistException("number is already used");
+            throw new UserExistException("Error: " + number + " is already used");
         } catch (UserNotFoundException exc) {
             User user = userService.get(userId);
             boolean verifyNumber = Miscellaneous.isValidNumber(number);
@@ -182,7 +186,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
         // check if number is already userd or not
         try {
             userService.get(number); // it will throw exception if user not found ...
-            throw new UserExistException("number is already used");
+            throw new UserExistException("Error: " + number + " is already used");
         } catch (UserNotFoundException exc) {
             User user = userService.get(userId);
             boolean verifyNumber = Miscellaneous.isValidNumber(number);
@@ -202,6 +206,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
         // check if email is already userd or not
         try {
             userService.get(email); // it will throw exception if user not found ...
+            throw new UserExistException("Error: " + email + " is already used");
         } catch (UserNotFoundException exc) {
             User user = userService.get(userId);
             boolean verifyEmail = Miscellaneous.isValidEmail(email);
@@ -223,6 +228,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
         // check if email is already userd or not
         try {
             userService.get(email); // it will throw exception if user not found ...
+            throw new UserExistException("Error: " + email + " is already used");
         } catch (UserNotFoundException exc) {
             User user = userService.get(userId);
             boolean verifyEmail = Miscellaneous.isValidEmail(email);
@@ -254,10 +260,10 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
                     // save new password to user
                     userRepository.save(user);
                 } else {
-                    throw new WeakPasswordException("password is not strong");
+                    throw new WeakPasswordException("Warning: Password is too weak");
                 }
             } else {
-                throw new WrongPasswordException("Wrong Password");
+                throw new WrongPasswordException("Error: Wrong Password");
             }
         }
     }
@@ -279,10 +285,10 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
                     // save new password to user
                     userRepository.save(user);
                 } else {
-                    throw new WeakPasswordException("password is not strong");
+                    throw new WeakPasswordException("Warning: Password is too weak");
                 }
             } else {
-                throw new WrongPasswordException("Wrong Password");
+                throw new WrongPasswordException("Error: Wrong Password");
             }
         }
     }
@@ -297,10 +303,10 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
                     user.setActive(0);
                     return userRepository.save(user) != null;
                 } else {
-                    throw new UserException("User is already deactivated");
+                    throw new UserException("Warning: User is already deactivated");
                 }
             } else {
-                throw new WrongPasswordException("Wrong Password");
+                throw new WrongPasswordException("Error: Wrong Password");
             }
         }
         return false;
@@ -318,10 +324,10 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
                     user.setActive(0);
                     return userRepository.save(user) != null;
                 } else {
-                    throw new UserException("User is already deactivated");
+                    throw new UserException("Warning: User is already deactivated");
                 }
             } else {
-                throw new WrongPasswordException("Wrong Password");
+                throw new WrongPasswordException("Error: Wrong Password");
             }
         }
         return false;
@@ -399,11 +405,11 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
 
         // checking user name
         if (name == null || name == "") {
-            throw new UserException("Invalid user name");
+            throw new UserException("Error: Invalid user name");
         }
         // checking user email
         if (email == null || email == "") {
-            throw new InvalidEmailException("Empty email address Error");
+            throw new InvalidEmailException("Error: Empty email address Error");
         } else {
             checkEmail(email);
         }
@@ -411,37 +417,35 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
         checkNumber(number);
         // checking user Password
         if (password == null || password == "") {
-            throw new InvalidPasswordException("empty password field");
+            throw new InvalidPasswordException("Error: Password must be provided");
         } else if (!Miscellaneous.isValidPassword(password)) {
-            throw new WeakPasswordException("password is not strong !!!");
+            throw new WeakPasswordException("Warning: Password is too weak");
         }
         // checking user Role
         if (!role.equalsIgnoreCase("BUYER") && !role.equalsIgnoreCase("SELLER")) {
-            throw new IllegalRoleException("You cannot register a user with this role");
+            throw new IllegalRoleException("Warning: You cannot register a user with this role");
         }
     }
 
     public void checkNumber(String number) {
-        System.out.println("checking mobile number ...");
         if (!Miscellaneous.isValidNumber(number)) {
-            throw new InvalidNumberException("Invalid phone number");
+            throw new InvalidNumberException("Error: Invalid phone number");
         }
 
         User userDetails = userRepository.findByNumber(number);
         if (userDetails != null) {
-            throw new UserExistException("phone number already exists, try login !!!");
+            throw new UserExistException("Warning: phone Number already exists, try login !!!");
         }
     }
 
     public void checkEmail(String email) {
-        System.out.println("checking email ...");
         if (!Miscellaneous.isValidEmail(email)) {
-            throw new InvalidEmailException("Invalid email Address");
+            throw new InvalidEmailException("Error: Invalid email Address");
         }
 
         User userDetails = userRepository.findByEmail(email);
         if (userDetails != null) {
-            throw new UserExistException("email already exists, try login !!!");
+            throw new UserExistException("Warning: Email already exists, try login !!!");
         }
     }
 

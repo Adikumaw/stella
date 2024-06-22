@@ -3,6 +3,8 @@ package com.nothing.ecommerce.services;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -27,6 +29,8 @@ public class UpdateVerificationTokenServiceImpl implements UpdateVerificationTok
     @Autowired
     private UserService userService;
 
+    private static final Logger logger = LoggerFactory.getLogger(UpdateVerificationTokenServiceImpl.class);
+
     @Override
     public void sender(String reference) {
         User user = userService.get(reference);
@@ -46,8 +50,7 @@ public class UpdateVerificationTokenServiceImpl implements UpdateVerificationTok
         try {
             emailService.sendEmail(email, emailSubject, formatedMessage);
         } catch (Exception e) {
-            System.out.println("unable to send email:");
-            e.printStackTrace();
+            logger.error("Error sending email: " + e.getMessage(), e);
         }
     }
 
@@ -74,8 +77,7 @@ public class UpdateVerificationTokenServiceImpl implements UpdateVerificationTok
         try {
             emailService.sendEmail(email, emailSubject, formatedMessage);
         } catch (Exception e) {
-            System.out.println("unable to send email");
-            e.printStackTrace();
+            logger.error("Error sending email: " + e.getMessage(), e);
         }
     }
 

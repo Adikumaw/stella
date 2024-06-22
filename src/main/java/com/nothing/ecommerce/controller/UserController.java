@@ -3,8 +3,10 @@ package com.nothing.ecommerce.controller;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.nothing.ecommerce.exception.InvalidJWTHeaderException;
+import com.nothing.ecommerce.exception.UnknownErrorException;
+import com.nothing.ecommerce.exception.UserException;
 import com.nothing.ecommerce.model.UpdatePasswordRequest;
-import com.nothing.ecommerce.model.UserInfoModel;
+import com.nothing.ecommerce.model.UserViewModel;
 import com.nothing.ecommerce.model.UserModel;
 import com.nothing.ecommerce.services.UserService;
 import com.nothing.ecommerce.services.JWTService;
@@ -13,6 +15,8 @@ import com.nothing.ecommerce.services.VerificationTokenService;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -35,6 +39,8 @@ public class UserController {
     private VerificationTokenService verificationTokenService;
     @Autowired
     private JWTService jwtService;
+
+    private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody UserModel userModel) {
@@ -73,7 +79,7 @@ public class UserController {
     }
 
     @GetMapping
-    public UserInfoModel getInfo(@RequestHeader("Authorization") String jwtHeader) {
+    public UserViewModel getInfo(@RequestHeader("Authorization") String jwtHeader) {
         if (jwtService.verifyJwtHeader(jwtHeader)) {
             // extract token from request header
             String jwtToken = jwtHeader.substring(7);
@@ -81,32 +87,38 @@ public class UserController {
                 String reference = jwtService.fetchReference(jwtToken);
 
                 return userService.getInfo(reference);
-            } catch (Exception e) {
-                System.out.println("------------------------->>>>");
-                System.out.println(e.getMessage());
+            } catch (IllegalArgumentException e) {
                 throw e;
+            } catch (UserException e) {
+                throw e;
+            } catch (Exception e) {
+                logger.error("Unknown error: " + e.getMessage(), e);
+                throw new UnknownErrorException("Error: unknown error");
             }
         } else {
-            throw new InvalidJWTHeaderException("invalid JWTHeader !!!");
+            throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
         }
     }
 
     @PutMapping("/name")
-    public UserInfoModel updateName(@RequestBody String name, @RequestHeader("Authorization") String jwtHeader) {
+    public UserViewModel updateName(@RequestBody String name, @RequestHeader("Authorization") String jwtHeader) {
         if (jwtService.verifyJwtHeader(jwtHeader)) {
             // extract token from request header
             String jwtToken = jwtHeader.substring(7);
             try {
                 String reference = jwtService.fetchReference(jwtToken);
 
-                return userService.convertoInfoModel(userAdvanceService.updateName(reference, name));
-            } catch (Exception e) {
-                System.out.println("------------------------->>>>");
-                System.out.println(e.getMessage());
+                return userService.converToViewModel(userAdvanceService.updateName(reference, name));
+            } catch (IllegalArgumentException e) {
                 throw e;
+            } catch (UserException e) {
+                throw e;
+            } catch (Exception e) {
+                logger.error("Unknown error: " + e.getMessage(), e);
+                throw new UnknownErrorException("Error: unknown error");
             }
         } else {
-            throw new InvalidJWTHeaderException("invalid JWTHeader !!!");
+            throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
         }
     }
 
@@ -123,13 +135,16 @@ public class UserController {
 
                 return ResponseEntity.status(HttpStatus.OK).body("Success");
 
-            } catch (Exception e) {
-                System.out.println("------------------------->>>>");
-                System.out.println(e.getMessage());
+            } catch (IllegalArgumentException e) {
                 throw e;
+            } catch (UserException e) {
+                throw e;
+            } catch (Exception e) {
+                logger.error("Unknown error: " + e.getMessage(), e);
+                throw new UnknownErrorException("Error: unknown error");
             }
         } else {
-            throw new InvalidJWTHeaderException("invalid JWTHeader !!!");
+            throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
         }
     }
 
@@ -146,13 +161,16 @@ public class UserController {
 
                 return ResponseEntity.status(HttpStatus.OK).body("Success");
 
-            } catch (Exception e) {
-                System.out.println("------------------------->>>>");
-                System.out.println(e.getMessage());
+            } catch (IllegalArgumentException e) {
                 throw e;
+            } catch (UserException e) {
+                throw e;
+            } catch (Exception e) {
+                logger.error("Unknown error: " + e.getMessage(), e);
+                throw new UnknownErrorException("Error: unknown error");
             }
         } else {
-            throw new InvalidJWTHeaderException("invalid JWTHeader !!!");
+            throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
         }
     }
 
@@ -170,13 +188,16 @@ public class UserController {
 
                 return ResponseEntity.status(HttpStatus.OK).body("Success");
 
-            } catch (Exception e) {
-                System.out.println("------------------------->>>>");
-                System.out.println(e.getMessage());
+            } catch (IllegalArgumentException e) {
                 throw e;
+            } catch (UserException e) {
+                throw e;
+            } catch (Exception e) {
+                logger.error("Unknown error: " + e.getMessage(), e);
+                throw new UnknownErrorException("Error: unknown error");
             }
         } else {
-            throw new InvalidJWTHeaderException("invalid JWTHeader !!!");
+            throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
         }
     }
 
@@ -193,13 +214,16 @@ public class UserController {
 
                 return ResponseEntity.status(HttpStatus.OK).body("Success");
 
-            } catch (Exception e) {
-                System.out.println("------------------------->>>>");
-                System.out.println(e.getMessage());
+            } catch (IllegalArgumentException e) {
                 throw e;
+            } catch (UserException e) {
+                throw e;
+            } catch (Exception e) {
+                logger.error("Unknown error: " + e.getMessage(), e);
+                throw new UnknownErrorException("Error: unknown error");
             }
         } else {
-            throw new InvalidJWTHeaderException("invalid JWTHeader !!!");
+            throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
         }
     }
 
@@ -215,13 +239,16 @@ public class UserController {
 
                 return ResponseEntity.status(HttpStatus.OK).body("Success");
 
-            } catch (Exception e) {
-                System.out.println("------------------------->>>>");
-                System.out.println(e.getMessage());
+            } catch (IllegalArgumentException e) {
                 throw e;
+            } catch (UserException e) {
+                throw e;
+            } catch (Exception e) {
+                logger.error("Unknown error: " + e.getMessage(), e);
+                throw new UnknownErrorException("Error: unknown error");
             }
         } else {
-            throw new InvalidJWTHeaderException("invalid JWTHeader !!!");
+            throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
         }
     }
 

@@ -2,6 +2,8 @@ package com.nothing.ecommerce.security;
 
 import java.io.IOException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -26,6 +28,8 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
     @Autowired
     private CustomUserDetailsService customUserDetailsService;
 
+    private static final Logger logger = LoggerFactory.getLogger(JWTAuthenticationFilter.class);
+
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response,
             FilterChain filterChain)
@@ -41,11 +45,8 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
             try {
                 reference = this.jwtService.fetchReference(token);
             } catch (Exception e) {
-                System.out.println("------------------------->>>>");
-                System.out.println(e.getMessage());
+                logger.error("Reference Fetcher failed: " + e.getMessage(), e);
             }
-        } else {
-            System.out.println("Invalid Header Value !! ");
         }
 
         if (reference != null && SecurityContextHolder.getContext().getAuthentication() == null) {
@@ -62,7 +63,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
                 // Set the authentication
                 SecurityContextHolder.getContext().setAuthentication(authentication);
             } else {
-                System.out.println("Invalid Token");
+                logger.error("Invalid Token request: " + token);
             }
         }
         // pass further filteration to Spring Security

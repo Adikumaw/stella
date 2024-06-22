@@ -9,7 +9,7 @@ import com.nothing.ecommerce.entity.User;
 import com.nothing.ecommerce.exception.InvalidEmailException;
 import com.nothing.ecommerce.exception.UserNotFoundException;
 import com.nothing.ecommerce.miscellaneous.Miscellaneous;
-import com.nothing.ecommerce.model.UserInfoModel;
+import com.nothing.ecommerce.model.UserViewModel;
 import com.nothing.ecommerce.repository.UserRepository;
 
 @Service
@@ -34,7 +34,7 @@ public class UserServiceImpl implements UserService {
             if (userDetails != null) {
                 return userDetails;
             } else {
-                throw new UserNotFoundException("user not found by reference: " + reference);
+                throw new UserNotFoundException("Error: User not found by reference: " + reference);
             }
         }
         if (Miscellaneous.isValidNumber(reference)) {
@@ -42,10 +42,10 @@ public class UserServiceImpl implements UserService {
             if (userDetails != null) {
                 return userDetails;
             } else {
-                throw new UserNotFoundException("user not found by reference: " + reference);
+                throw new UserNotFoundException("Error: User not found by reference: " + reference);
             }
         }
-        throw new InvalidEmailException("input is not a valid email address or number");
+        throw new InvalidEmailException("Error: Invalid Email address or Number: " + reference);
     }
 
     @Override
@@ -70,7 +70,7 @@ public class UserServiceImpl implements UserService {
             if (userId != 0) {
                 return userId;
             } else {
-                throw new UserNotFoundException("user not found");
+                throw new UserNotFoundException("Error: User not found");
             }
         }
         if (Miscellaneous.isValidNumber(reference)) {
@@ -78,10 +78,10 @@ public class UserServiceImpl implements UserService {
             if (userId != 0) {
                 return userId;
             } else {
-                throw new UserNotFoundException("user not found");
+                throw new UserNotFoundException("Error: User not found");
             }
         }
-        throw new IllegalArgumentException("Invalid email address or number");
+        throw new IllegalArgumentException("Error: Invalid Email address or Number: " + reference);
     }
 
     @Override
@@ -95,15 +95,15 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public UserInfoModel getInfo(String reference) {
+    public UserViewModel getInfo(String reference) {
         User user = get(reference);
 
-        return convertoInfoModel(user);
+        return converToViewModel(user);
     }
 
     @Override
-    public UserInfoModel convertoInfoModel(User user) {
-        return new UserInfoModel(user.getName(), user.getEmail(), user.getNumber(),
+    public UserViewModel converToViewModel(User user) {
+        return new UserViewModel(user.getName(), user.getEmail(), user.getNumber(),
                 user.getActive());
     }
 }

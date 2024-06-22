@@ -3,6 +3,8 @@ package com.nothing.ecommerce.services;
 import java.util.Date;
 import java.util.UUID;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,6 +27,8 @@ public class VerificationTokenServiceImpl implements VerificationTokenService {
     @Autowired
     private UserService userService;
 
+    private static final Logger logger = LoggerFactory.getLogger(VerificationTokenServiceImpl.class);
+
     @Override
     public void sender(String reference) {
         User user = userService.get(reference);
@@ -40,8 +44,7 @@ public class VerificationTokenServiceImpl implements VerificationTokenService {
         try {
             emailService.sendEmail(email, emailSubject, formatedMessage);
         } catch (Exception e) {
-            System.out.println("unable to send email");
-            e.printStackTrace();
+            logger.error("Error sending email: " + e.getMessage(), e);
         }
     }
 
@@ -57,8 +60,7 @@ public class VerificationTokenServiceImpl implements VerificationTokenService {
         try {
             emailService.sendEmail(email, emailSubject, formatedMessage);
         } catch (Exception e) {
-            System.out.println("unable to send email");
-            e.printStackTrace();
+            logger.error("Error sending email: " + e.getMessage(), e);
         }
     }
 
