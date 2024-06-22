@@ -6,6 +6,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.nothing.ecommerce.entity.Address;
+import com.nothing.ecommerce.exception.InvalidAddressException;
 import com.nothing.ecommerce.model.AddressModel;
 import com.nothing.ecommerce.repository.AddressRepository;
 
@@ -23,6 +24,9 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public List<AddressModel> save(String reference, AddressModel addressModel) {
+        if (!verify(addressModel)) {
+            throw new InvalidAddressException("Error: Address is not valid");
+        }
         // fetch userId
         int userId = userService.findUserIdByReference(reference);
 
@@ -46,6 +50,9 @@ public class AddressServiceImpl implements AddressService {
 
     @Override
     public List<AddressModel> save(int userId, AddressModel addressModel) {
+        if (!verify(addressModel)) {
+            throw new InvalidAddressException("Error: Address is not valid");
+        }
         List<Address> addresses = getAddresses(userId);
 
         // removing main from other addresses
@@ -238,4 +245,20 @@ public class AddressServiceImpl implements AddressService {
         addressRepository.delete(address);
     }
 
+    @Override
+    public Boolean verify(AddressModel addressModel) {
+        if (addressModel.getStreetAddress() == null || addressModel.getStreetAddress().isEmpty()) {
+            return false;
+        } else if (addressModel.getCity() == null || addressModel.getCity().isEmpty()) {
+            return false;
+        } else if (addressModel.getState() == null || addressModel.getState().isEmpty()) {
+            return false;
+        } else if (addressModel.getPostalCode() == null || addressModel.getPostalCode().isEmpty()) {
+            return false;
+        } else if (addressModel.getCountry() == null || addressModel.getCountry().isEmpty()) {
+            return false;
+        } else {
+            return true;
+        }
+    }
 }

@@ -38,4 +38,6 @@ public interface AddressService {
     Address save(Address address);
 
     List<AddressModel> convertToAddressModels(List<Address> addresses);
+
+    Boolean verify(AddressModel addressModel);
 }
