@@ -45,7 +45,7 @@ public class JWTAuthenticationFilter extends OncePerRequestFilter {
             try {
                 reference = this.jwtService.fetchReference(token);
             } catch (Exception e) {
-                logger.error("Reference Fetcher failed: " + e.getMessage(), e);
+                logger.error("Reference Fetcher failed: " + e.getMessage());
             }
         }
 
