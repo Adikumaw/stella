@@ -4,6 +4,9 @@ import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestClientBuilder;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.data.elasticsearch.repository.config.EnableElasticsearchRepositories;
 import org.springframework.stereotype.Component;
 
 import com.nothing.ecommerce.config.HttpClientConfigImpl;
@@ -13,6 +16,7 @@ import co.elastic.clients.json.jackson.JacksonJsonpMapper;
 import co.elastic.clients.transport.rest_client.RestClientTransport;
 
 @Component
+@Configuration
 public class ESClient {
 
     @Bean

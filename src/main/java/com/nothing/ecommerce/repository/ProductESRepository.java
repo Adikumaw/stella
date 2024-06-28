@@ -13,10 +13,9 @@ public interface ProductESRepository extends ElasticsearchRepository<Product, St
 
     List<Product> findByName(String name);
 
-    @Query("{\"fuzzy\": {\"name\": {\"value\": \"?name\", \"fuzziness\": 2}}}")
-    List<Product> findByNameFuzzy(String name);
-
     Product findByUserIdAndName(int userId, String name);
 
     List<Product> findByUserId(int userId);
+
+    List<Product> search(Query query, Class<Product> class1);
 }

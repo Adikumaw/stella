@@ -4,9 +4,16 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import org.elasticsearch.client.RequestOptions;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
+import org.springframework.data.elasticsearch.core.SearchHit;
+import org.springframework.data.elasticsearch.core.SearchHits;
+import org.springframework.data.elasticsearch.core.query.Query;
+import org.springframework.data.elasticsearch.core.query.SearchTemplateQueryBuilder;
+import org.springframework.data.elasticsearch.core.query.StringQuery;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,6 +29,11 @@ import com.nothing.ecommerce.model.ProductViewModel;
 import com.nothing.ecommerce.repository.ProductCategoryRepository;
 import com.nothing.ecommerce.repository.ProductESRepository;
 
+import co.elastic.clients.elasticsearch.ElasticsearchClient;
+import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
+import co.elastic.clients.elasticsearch.core.SearchRequest;
+import co.elastic.clients.elasticsearch.core.SearchResponse;
+
 @Service
 public class ProductServiceImpl implements ProductService {
 
@@ -33,6 +45,8 @@ public class ProductServiceImpl implements ProductService {
     private ProductCategoryRepository categoryRepository;
     @Autowired
     private ImageService imageService;
+    @Autowired
+    private ElasticsearchClient elasticsearchClient;
     private final String path = "/home/all_father/Documents/workshop/java/ecommerce/src/main/resources/static/img";
 
     private static final Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
@@ -86,8 +100,7 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<ProductViewModel> getProductsBySearch(String search) {
 
-
-        List<Product> ESProducts = productESRepository.findByNameFuzzy(search);
+        List<Product> ESProducts = productESRepository.findByName(search);
         if (ESProducts != null) {
             List<ProductViewModel> productsViewModels = new ArrayList<ProductViewModel>();
             for (Product product : ESProducts) {

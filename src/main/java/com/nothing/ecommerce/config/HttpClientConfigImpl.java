@@ -46,5 +46,4 @@ public class HttpClientConfigImpl implements HttpClientConfigCallback {
 
         return httpAsyncClientBuilder;
     }
-
 }
