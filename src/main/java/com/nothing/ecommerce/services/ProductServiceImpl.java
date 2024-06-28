@@ -4,16 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import org.elasticsearch.client.RequestOptions;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.elasticsearch.core.ElasticsearchOperations;
-import org.springframework.data.elasticsearch.core.SearchHit;
-import org.springframework.data.elasticsearch.core.SearchHits;
-import org.springframework.data.elasticsearch.core.query.Query;
-import org.springframework.data.elasticsearch.core.query.SearchTemplateQueryBuilder;
-import org.springframework.data.elasticsearch.core.query.StringQuery;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -27,29 +18,20 @@ import com.nothing.ecommerce.exception.UsedProductNameException;
 import com.nothing.ecommerce.model.ProductInputModel;
 import com.nothing.ecommerce.model.ProductViewModel;
 import com.nothing.ecommerce.repository.ProductCategoryRepository;
-import com.nothing.ecommerce.repository.ProductESRepository;
-
-import co.elastic.clients.elasticsearch.ElasticsearchClient;
-import co.elastic.clients.elasticsearch._types.query_dsl.QueryBuilders;
-import co.elastic.clients.elasticsearch.core.SearchRequest;
-import co.elastic.clients.elasticsearch.core.SearchResponse;
+import com.nothing.ecommerce.repository.ProductRepository;
 
 @Service
 public class ProductServiceImpl implements ProductService {
 
     @Autowired
-    private ProductESRepository productESRepository;
+    private ProductRepository productRepository;
     @Autowired
     private UserService userService;
     @Autowired
     private ProductCategoryRepository categoryRepository;
     @Autowired
     private ImageService imageService;
-    @Autowired
-    private ElasticsearchClient elasticsearchClient;
     private final String path = "/home/all_father/Documents/workshop/java/ecommerce/src/main/resources/static/img";
-
-    private static final Logger logger = LoggerFactory.getLogger(ProductServiceImpl.class);
 
     @Override
     public ProductViewModel save(String reference, ProductInputModel model, List<MultipartFile> images) {
@@ -65,7 +47,7 @@ public class ProductServiceImpl implements ProductService {
         int userId = userService.findUserIdByReference(reference);
 
         // verify product name is not used before
-        if (productESRepository.findByUserIdAndName(userId, model.getName()) != null) {
+        if (productRepository.existsByUserIdAndName(userId, model.getName())) {
             throw new UsedProductNameException("Error: product name is already used");
         }
 
@@ -77,22 +59,7 @@ public class ProductServiceImpl implements ProductService {
 
         Product product = productBuilder(userId, model, imageUrls);
 
-        try {
-            productESRepository.save(product);
-        } catch (Exception e) {
-            logger.warn("Exception while saving product: " + e.getMessage());
-        }
-
-        String name = product.getName();
-        product = productESRepository.findByUserIdAndName(userId, name);
-        while (product == null) {
-            try {
-                Thread.sleep(2000);
-            } catch (InterruptedException e) {
-                logger.warn("Sleep Interupted");
-            }
-            product = productESRepository.findByUserIdAndName(userId, name);
-        }
+        product = productRepository.save(product);
 
         return convertToProductViewModel(product);
     }
@@ -100,10 +67,10 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<ProductViewModel> getProductsBySearch(String search) {
 
-        List<Product> ESProducts = productESRepository.findByName(search);
-        if (ESProducts != null) {
+        List<Product> products = productRepository.findByNameContaining(search);
+        if (products != null) {
             List<ProductViewModel> productsViewModels = new ArrayList<ProductViewModel>();
-            for (Product product : ESProducts) {
+            for (Product product : products) {
                 productsViewModels.add(convertToProductViewModel(product));
             }
             return productsViewModels;
@@ -116,7 +83,7 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductViewModel> getProductsByReference(String reference) {
         int userId = userService.findUserIdByReference(reference);
 
-        List<Product> products = productESRepository.findByUserId(userId);
+        List<Product> products = productRepository.findByUserId(userId);
         if (products != null) {
             List<ProductViewModel> productsViewModels = new ArrayList<ProductViewModel>();
             for (Product product : products) {
@@ -172,8 +139,6 @@ public class ProductServiceImpl implements ProductService {
                 .image8(imageUrls.get(7))
                 .image9(imageUrls.get(8))
                 .build();
-
-        System.out.println(product.toString());
 
         return product;
     }
