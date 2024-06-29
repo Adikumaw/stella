@@ -16,6 +16,4 @@ public interface ProductService {
     ProductViewModel save(String reference, ProductInputModel product, List<MultipartFile> images);
 
     public ProductViewModel update(String reference, ProductUpdateModel model, List<MultipartFile> images);
-
-    Boolean verify(ProductInputModel productInputModel);
 }

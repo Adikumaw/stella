@@ -97,20 +97,6 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
-    private ProductViewModel convertToProductViewModel(Product product) {
-        Optional<ProductCategory> productCategory = categoryRepository.findById(product.getCategoryId());
-        if (productCategory.isPresent()) {
-            return new ProductViewModel(product.getId(), product.getName(), product.getDescription(),
-                    product.getPrice(),
-                    product.getStock(), productCategory.get().getCategory(), product.getImage1(), product.getImage2(),
-                    product.getImage3(),
-                    product.getImage4(), product.getImage5(), product.getImage6(), product.getImage7(),
-                    product.getImage8(), product.getImage9());
-        } else {
-            throw new InvalidProductCategoryException("Error: Invalid product category");
-        }
-    }
-
     @Override
     public ProductViewModel update(String reference, ProductUpdateModel model, List<MultipartFile> images) {
         int userId = userService.findUserIdByReference(reference);
@@ -184,6 +170,9 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
+    // ----------------------------------------------------------------
+    // HELPER FUNCTIONS FOR PRODUCTS
+    // ----------------------------------------------------------------
     private Product updateImageUrls(Product product, List<String> imageUrls) {
         int imageUrlsSize = imageUrls.size();
         for (int i = imageUrlsSize; i < 9; i++) {
@@ -233,7 +222,6 @@ public class ProductServiceImpl implements ProductService {
         return product;
     }
 
-    @Override
     public Boolean verify(ProductInputModel product) {
         if (product.getName() == null || product.getName().isEmpty()) {
             return false;
@@ -250,4 +238,17 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
+    private ProductViewModel convertToProductViewModel(Product product) {
+        Optional<ProductCategory> productCategory = categoryRepository.findById(product.getCategoryId());
+        if (productCategory.isPresent()) {
+            return new ProductViewModel(product.getId(), product.getName(), product.getDescription(),
+                    product.getPrice(),
+                    product.getStock(), productCategory.get().getCategory(), product.getImage1(), product.getImage2(),
+                    product.getImage3(),
+                    product.getImage4(), product.getImage5(), product.getImage6(), product.getImage7(),
+                    product.getImage8(), product.getImage9());
+        } else {
+            throw new InvalidProductCategoryException("Error: Invalid product category");
+        }
+    }
 }
