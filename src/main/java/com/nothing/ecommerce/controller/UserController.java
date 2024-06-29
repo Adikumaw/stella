@@ -20,7 +20,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -227,30 +226,27 @@ public class UserController {
         }
     }
 
-    @DeleteMapping
-    public ResponseEntity<String> delete(@RequestHeader("Authorization") String jwtHeader) {
-        if (jwtService.verifyJwtHeader(jwtHeader)) {
-            // extract token from request header
-            String jwtToken = jwtHeader.substring(7);
-            try {
-                String reference = jwtService.fetchReference(jwtToken);
-
-                userAdvanceService.delete(reference);
-
-                return ResponseEntity.status(HttpStatus.OK).body("Success");
-
-            } catch (IllegalArgumentException e) {
-                throw e;
-            } catch (UserException e) {
-                throw e;
-            } catch (Exception e) {
-                logger.error("Unknown error: " + e.getMessage(), e);
-                throw new UnknownErrorException("Error: unknown error");
-            }
-        } else {
-            throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
-        }
-    }
+    // @DeleteMapping
+    // public ResponseEntity<String> delete(@RequestHeader("Authorization") String jwtHeader) {
+    //     if (jwtService.verifyJwtHeader(jwtHeader)) {
+    //         // extract token from request header
+    //         String jwtToken = jwtHeader.substring(7);
+    //         try {
+    //             String reference = jwtService.fetchReference(jwtToken);
+    //             userAdvanceService.delete(reference);
+    //             return ResponseEntity.status(HttpStatus.OK).body("Success");
+    //         } catch (IllegalArgumentException e) {
+    //             throw e;
+    //         } catch (UserException e) {
+    //             throw e;
+    //         } catch (Exception e) {
+    //             logger.error("Unknown error: " + e.getMessage(), e);
+    //             throw new UnknownErrorException("Error: unknown error");
+    //         }
+    //     } else {
+    //         throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
+    //     }
+    // }
 
     @GetMapping("/hello")
     public String hello_world() {
