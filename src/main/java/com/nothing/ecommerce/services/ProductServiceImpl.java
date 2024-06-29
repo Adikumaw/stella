@@ -14,8 +14,10 @@ import com.nothing.ecommerce.exception.EmptyImagesException;
 import com.nothing.ecommerce.exception.ImageException;
 import com.nothing.ecommerce.exception.InvalidProductCategoryException;
 import com.nothing.ecommerce.exception.InvalidProductException;
+import com.nothing.ecommerce.exception.InvalidProductIdException;
 import com.nothing.ecommerce.exception.UsedProductNameException;
 import com.nothing.ecommerce.model.ProductInputModel;
+import com.nothing.ecommerce.model.ProductUpdateModel;
 import com.nothing.ecommerce.model.ProductViewModel;
 import com.nothing.ecommerce.repository.ProductCategoryRepository;
 import com.nothing.ecommerce.repository.ProductRepository;
@@ -51,7 +53,7 @@ public class ProductServiceImpl implements ProductService {
             throw new UsedProductNameException("Error: product name is already used");
         }
 
-        List<String> imageUrls = imageService.saveImages(userId, model.getName(), images, path);
+        List<String> imageUrls = imageService.save(userId, model.getName(), images, path);
 
         if (imageUrls.isEmpty()) {
             throw new ImageException("Error: Failed to save images");
@@ -110,9 +112,94 @@ public class ProductServiceImpl implements ProductService {
     }
 
     @Override
-    public ProductInputModel update(ProductInputModel product, MultipartFile images) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'update'");
+    public ProductViewModel update(String reference, ProductUpdateModel model, List<MultipartFile> images) {
+        int userId = userService.findUserIdByReference(reference);
+        Boolean isUpdateAvailable = false;
+        Optional<Product> optionalProduct = productRepository.findById(model.getId());
+
+        if (optionalProduct.isPresent()) {
+            Product product = optionalProduct.get();
+
+            if (!model.getDescription().isEmpty()) {
+                isUpdateAvailable = true;
+                product.setDescription(model.getDescription());
+            }
+            if (model.getPrice() > 0) {
+                isUpdateAvailable = true;
+                product.setPrice(model.getPrice());
+            }
+            if (model.getStock() > 0) {
+                isUpdateAvailable = true;
+                product.setStock(model.getStock());
+            }
+            if (!model.getCategory().isEmpty()) {
+                isUpdateAvailable = true;
+                int categoryId = categoryRepository.findIdByCategory(model.getCategory());
+                product.setCategoryId(categoryId);
+            }
+
+            if (!model.getName().isEmpty()) {
+                isUpdateAvailable = true;
+                // Check if the new product name is already in use
+                if (productRepository.existsByUserIdAndName(userId, model.getName())) {
+                    throw new UsedProductNameException("Error: product name is already used");
+                }
+                // if images are present, add them to the list
+                if (images != null && !images.isEmpty()) {
+                    List<String> imageUrls = imageService.update(userId, product.getName(), model.getName(), images,
+                            path);
+                    if (imageUrls.isEmpty()) {
+                        throw new ImageException("Error: Failed to save images");
+                    }
+                    product = updateImageUrls(product, imageUrls);
+                }
+                // else just update the Image Directory name
+                else {
+                    List<String> imageUrls = imageService.renameDirectory(userId, product.getName(), model.getName(),
+                            path);
+                    product = updateImageUrls(product, imageUrls);
+                }
+                product.setName(model.getName());
+            } else {
+                // if name is same but images are to be updated, add them to the list
+                if (images != null && !images.isEmpty()) {
+                    isUpdateAvailable = true;
+                    List<String> imageUrls = imageService.update(userId, product.getName(), product.getName(), images,
+                            path);
+                    if (imageUrls.isEmpty()) {
+                        throw new ImageException("Error: Failed to save images");
+                    }
+                    product = updateImageUrls(product, imageUrls);
+                }
+            }
+
+            // save updated product information
+            if (isUpdateAvailable) {
+                product = productRepository.save(product);
+            }
+
+            return convertToProductViewModel(product);
+        } else {
+            throw new InvalidProductIdException("Error: Product with id " + model.getId() + " does not exist");
+        }
+    }
+
+    private Product updateImageUrls(Product product, List<String> imageUrls) {
+        int imageUrlsSize = imageUrls.size();
+        for (int i = imageUrlsSize; i < 9; i++) {
+            imageUrls.add(null);
+        }
+        product.setImage1(imageUrls.get(0));
+        product.setImage2(imageUrls.get(1));
+        product.setImage3(imageUrls.get(2));
+        product.setImage4(imageUrls.get(3));
+        product.setImage5(imageUrls.get(4));
+        product.setImage6(imageUrls.get(5));
+        product.setImage7(imageUrls.get(6));
+        product.setImage8(imageUrls.get(7));
+        product.setImage9(imageUrls.get(8));
+
+        return product;
     }
 
     public Product productBuilder(int userId, ProductInputModel model, List<String> imageUrls) {
@@ -121,6 +208,9 @@ public class ProductServiceImpl implements ProductService {
             imageUrls.add(null);
         }
         int categoryId = categoryRepository.findIdByCategory(model.getCategory());
+        if (categoryId == 0) {
+            throw new InvalidProductCategoryException("Error: Invalid product category");
+        }
 
         Product product = Product.builder()
                 .userId(userId)
