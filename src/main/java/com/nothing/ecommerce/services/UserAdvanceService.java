@@ -1,7 +1,7 @@
 package com.nothing.ecommerce.services;
 
 import com.nothing.ecommerce.entity.User;
-import com.nothing.ecommerce.model.UserModel;
+import com.nothing.ecommerce.model.UserInputModel;
 
 public interface UserAdvanceService {
 
@@ -9,7 +9,7 @@ public interface UserAdvanceService {
     // RestApi methods for user
     // ----------------------------------------------------------------
 
-    boolean register(UserModel userModel);
+    boolean register(UserInputModel userModel);
 
     boolean verify(String token);
 

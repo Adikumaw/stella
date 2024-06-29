@@ -15,7 +15,7 @@ import com.nothing.ecommerce.entity.Address;
 import com.nothing.ecommerce.entity.Roles;
 import com.nothing.ecommerce.entity.UpdateVerificationToken;
 import com.nothing.ecommerce.miscellaneous.*;
-import com.nothing.ecommerce.model.UserModel;
+import com.nothing.ecommerce.model.UserInputModel;
 import com.nothing.ecommerce.repository.RolesRepository;
 import com.nothing.ecommerce.repository.UserRepository;
 import com.nothing.ecommerce.exception.IllegalRoleException;
@@ -53,7 +53,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
     // ----------------------------------------------------------------
 
     @Override
-    public boolean register(UserModel userModel) {
+    public boolean register(UserInputModel userModel) {
         // vrify user details
         verifyUserDetails(userModel);
 
@@ -396,7 +396,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
         return false;
     }
 
-    public void verifyUserDetails(UserModel userModel) {
+    public void verifyUserDetails(UserInputModel userModel) {
         String name = userModel.getName();
         String email = userModel.getEmail();
         String number = userModel.getNumber();

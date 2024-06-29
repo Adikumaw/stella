@@ -1,6 +1,6 @@
 package com.nothing.ecommerce.entity;
 
-import com.nothing.ecommerce.model.UserModel;
+import com.nothing.ecommerce.model.UserInputModel;
 
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -44,7 +44,7 @@ public class User {
         this.active = 1;
     }
 
-    public User(UserModel userModel) {
+    public User(UserInputModel userModel) {
         this.name = userModel.getName();
         this.email = userModel.getEmail();
         this.number = userModel.getNumber();
@@ -55,5 +55,4 @@ public class User {
     public boolean isActive() {
         return active != 0 ? true : false;
     }
-
 }

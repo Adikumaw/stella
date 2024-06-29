@@ -7,7 +7,7 @@ import com.nothing.ecommerce.exception.UnknownErrorException;
 import com.nothing.ecommerce.exception.UserException;
 import com.nothing.ecommerce.model.UpdatePasswordRequest;
 import com.nothing.ecommerce.model.UserViewModel;
-import com.nothing.ecommerce.model.UserModel;
+import com.nothing.ecommerce.model.UserInputModel;
 import com.nothing.ecommerce.services.UserService;
 import com.nothing.ecommerce.services.JWTService;
 import com.nothing.ecommerce.services.UserAdvanceService;
@@ -42,7 +42,7 @@ public class UserController {
     private static final Logger logger = LoggerFactory.getLogger(UserController.class);
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestBody UserModel userModel) {
+    public ResponseEntity<String> register(@RequestBody UserInputModel userModel) {
         userAdvanceService.register(userModel);
 
         return ResponseEntity.status(HttpStatus.OK).body("Success");
@@ -227,25 +227,26 @@ public class UserController {
     }
 
     // @DeleteMapping
-    // public ResponseEntity<String> delete(@RequestHeader("Authorization") String jwtHeader) {
-    //     if (jwtService.verifyJwtHeader(jwtHeader)) {
-    //         // extract token from request header
-    //         String jwtToken = jwtHeader.substring(7);
-    //         try {
-    //             String reference = jwtService.fetchReference(jwtToken);
-    //             userAdvanceService.delete(reference);
-    //             return ResponseEntity.status(HttpStatus.OK).body("Success");
-    //         } catch (IllegalArgumentException e) {
-    //             throw e;
-    //         } catch (UserException e) {
-    //             throw e;
-    //         } catch (Exception e) {
-    //             logger.error("Unknown error: " + e.getMessage(), e);
-    //             throw new UnknownErrorException("Error: unknown error");
-    //         }
-    //     } else {
-    //         throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
-    //     }
+    // public ResponseEntity<String> delete(@RequestHeader("Authorization") String
+    // jwtHeader) {
+    // if (jwtService.verifyJwtHeader(jwtHeader)) {
+    // // extract token from request header
+    // String jwtToken = jwtHeader.substring(7);
+    // try {
+    // String reference = jwtService.fetchReference(jwtToken);
+    // userAdvanceService.delete(reference);
+    // return ResponseEntity.status(HttpStatus.OK).body("Success");
+    // } catch (IllegalArgumentException e) {
+    // throw e;
+    // } catch (UserException e) {
+    // throw e;
+    // } catch (Exception e) {
+    // logger.error("Unknown error: " + e.getMessage(), e);
+    // throw new UnknownErrorException("Error: unknown error");
+    // }
+    // } else {
+    // throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
+    // }
     // }
 
     @GetMapping("/hello")
