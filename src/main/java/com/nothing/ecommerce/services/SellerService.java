@@ -1,10 +1,13 @@
 package com.nothing.ecommerce.services;
 
 import com.nothing.ecommerce.model.SellerInputModel;
+import com.nothing.ecommerce.model.SellerUpgradeModel;
 import com.nothing.ecommerce.model.SellerViewModel;
 
 public interface SellerService {
     boolean register(SellerInputModel model);
+
+    boolean upgradeToSeller(String reference, SellerUpgradeModel model);
 
     boolean verifyUpdate(String token);
 

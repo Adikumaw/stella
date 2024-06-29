@@ -15,6 +15,7 @@ import com.nothing.ecommerce.exception.InvalidSellerAddressException;
 import com.nothing.ecommerce.exception.InvalidStoreNameException;
 import com.nothing.ecommerce.exception.SellerExistsException;
 import com.nothing.ecommerce.model.SellerInputModel;
+import com.nothing.ecommerce.model.SellerUpgradeModel;
 import com.nothing.ecommerce.model.SellerViewModel;
 import com.nothing.ecommerce.model.UserInputModel;
 import com.nothing.ecommerce.repository.RolesRepository;
@@ -44,6 +45,28 @@ public class SellerServiceImpl implements SellerService {
         userAdvanceService.register(userModel);
 
         int userId = userService.findUserIdByEmail(model.getEmail());
+
+        Seller seller = new Seller(userId, model.getStoreName(), model.getAddress());
+        seller = sellerRepository.save(seller);
+
+        // create new seller role
+        Roles roles = new Roles(userId, "ROLE_SELLER");
+        rolesRepository.save(roles);
+
+        return (seller != null) ? true : false;
+    }
+
+    @Override
+    public boolean upgradeToSeller(String reference, SellerUpgradeModel model) {
+        // vrify seller details
+        if (model.getStoreName() == null || model.getStoreName().isEmpty()) {
+            throw new InvalidStoreNameException("Error: Empty Store name");
+        }
+        if (model.getAddress() == null || model.getAddress().isEmpty()) {
+            throw new InvalidSellerAddressException("Error: Address must be specified");
+        }
+
+        int userId = userService.findUserIdByReference(reference);
 
         Seller seller = new Seller(userId, model.getStoreName(), model.getAddress());
         seller = sellerRepository.save(seller);

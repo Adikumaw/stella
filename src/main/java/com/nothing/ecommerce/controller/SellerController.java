@@ -19,6 +19,7 @@ import com.nothing.ecommerce.exception.SellerException;
 import com.nothing.ecommerce.exception.UnknownErrorException;
 import com.nothing.ecommerce.exception.UserException;
 import com.nothing.ecommerce.model.SellerInputModel;
+import com.nothing.ecommerce.model.SellerUpgradeModel;
 import com.nothing.ecommerce.model.SellerViewModel;
 import com.nothing.ecommerce.services.JWTService;
 import com.nothing.ecommerce.services.SellerService;
@@ -38,6 +39,33 @@ public class SellerController {
         sellerService.register(model);
 
         return ResponseEntity.status(HttpStatus.OK).body("Success");
+    }
+
+    @PostMapping("/upgrade")
+    public ResponseEntity<String> upgradeToSeller(@RequestBody SellerUpgradeModel model,
+            @RequestHeader("Authorization") String jwtHeader) {
+        if (jwtService.verifyJwtHeader(jwtHeader)) {
+            // extract token from request header
+            String jwtToken = jwtHeader.substring(7);
+            try {
+                String reference = jwtService.fetchReference(jwtToken);
+
+                sellerService.upgradeToSeller(reference, model);
+
+                return ResponseEntity.status(HttpStatus.OK).body("Success");
+            } catch (IllegalArgumentException e) {
+                throw e;
+            } catch (UserException e) {
+                throw e;
+            } catch (SellerException e) {
+                throw e;
+            } catch (Exception e) {
+                logger.error("Unknown error: " + e.getMessage(), e);
+                throw new UnknownErrorException("Error: unknown error");
+            }
+        } else {
+            throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
+        }
     }
 
     @GetMapping("/verify-update")
