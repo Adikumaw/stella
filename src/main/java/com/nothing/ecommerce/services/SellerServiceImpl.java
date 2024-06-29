@@ -98,7 +98,7 @@ public class SellerServiceImpl implements SellerService {
         Optional<Seller> optionalSeller = sellerRepository.findById(userId);
         if (optionalSeller.isPresent() && storeName != null && !storeName.isEmpty()) {
             // Generate Verification Token
-            UpdateVerificationToken updateVerificationToken = updateVerificationTokenService.generate(
+            updateVerificationTokenService.generate(
                     userId,
                     storeName,
                     "storename");
