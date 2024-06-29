@@ -68,13 +68,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
         user = userRepository.save(user);
 
         // create new userRole from user model > role
-        Roles roles = new Roles();
-        roles.setUserId(user.getUserId());
-        if (userModel.getRole().equalsIgnoreCase("BUYER")) {
-            roles.setRole("ROLE_BUYER");
-        } else if (userModel.getRole().equalsIgnoreCase("SELLER")) {
-            roles.setRole("ROLE_SELLER");
-        }
+        Roles roles = new Roles(user.getUserId(), "ROLE_BUYER");
         rolesRepository.save(roles);
 
         // Generate Verification Token
@@ -401,7 +395,6 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
         String email = userModel.getEmail();
         String number = userModel.getNumber();
         String password = userModel.getPassword();
-        String role = userModel.getRole();
 
         // checking user name
         if (name == null || name == "") {
@@ -421,10 +414,6 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
         } else if (!Miscellaneous.isValidPassword(password)) {
             throw new WeakPasswordException("Warning: Password is too weak");
         }
-        // checking user Role
-        if (!role.equalsIgnoreCase("BUYER") && !role.equalsIgnoreCase("SELLER")) {
-            throw new IllegalRoleException("Warning: You cannot register a user with this role");
-        }
     }
 
     public void checkNumber(String number) {
@@ -432,8 +421,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
             throw new InvalidNumberException("Error: Invalid phone number");
         }
 
-        User userDetails = userRepository.findByNumber(number);
-        if (userDetails != null) {
+        if (userRepository.existsByEmail(number)) {
             throw new UserExistException("Warning: phone Number already exists, try login !!!");
         }
     }
@@ -443,8 +431,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
             throw new InvalidEmailException("Error: Invalid email Address");
         }
 
-        User userDetails = userRepository.findByEmail(email);
-        if (userDetails != null) {
+        if (userRepository.existsByEmail(email)) {
             throw new UserExistException("Warning: Email already exists, try login !!!");
         }
     }
