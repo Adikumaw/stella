@@ -14,6 +14,7 @@ public class ProductViewModel {
     private double price;
     private int stock;
     private String category;
+    private Boolean active;
     private String image1;
     private String image2;
     private String image3;

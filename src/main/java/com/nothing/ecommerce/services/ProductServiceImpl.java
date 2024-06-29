@@ -15,6 +15,7 @@ import com.nothing.ecommerce.exception.ImageException;
 import com.nothing.ecommerce.exception.InvalidProductCategoryException;
 import com.nothing.ecommerce.exception.InvalidProductException;
 import com.nothing.ecommerce.exception.InvalidProductIdException;
+import com.nothing.ecommerce.exception.UnAuthorizedUserException;
 import com.nothing.ecommerce.exception.UsedProductNameException;
 import com.nothing.ecommerce.model.ProductInputModel;
 import com.nothing.ecommerce.model.ProductUpdateModel;
@@ -105,6 +106,9 @@ public class ProductServiceImpl implements ProductService {
 
         if (optionalProduct.isPresent()) {
             Product product = optionalProduct.get();
+            if (product.getUserId() != userId) {
+                throw new UnAuthorizedUserException("Access denied: you are not allowed to access this product");
+            }
 
             if (!model.getDescription().isEmpty()) {
                 isUpdateAvailable = true;
@@ -122,6 +126,10 @@ public class ProductServiceImpl implements ProductService {
                 isUpdateAvailable = true;
                 int categoryId = categoryRepository.findIdByCategory(model.getCategory());
                 product.setCategoryId(categoryId);
+            }
+            if (model.isActive() != product.isActive()) {
+                isUpdateAvailable = true;
+                product.setActive(model.isActive());
             }
 
             if (!model.getName().isEmpty()) {
@@ -170,6 +178,24 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
+    @Override
+    public ProductViewModel deactivate(String reference, int productId) {
+        int userId = userService.findUserIdByReference(reference);
+        Optional<Product> optionalProduct = productRepository.findById(productId);
+
+        if (optionalProduct.isPresent()) {
+            Product product = optionalProduct.get();
+            if (product.getUserId() != userId) {
+                throw new UnAuthorizedUserException("Access denied: you are not allowed to access this product");
+            }
+            product.setActive(false);
+            product = productRepository.save(product);
+            return convertToProductViewModel(product);
+        } else {
+            throw new InvalidProductIdException("Error: Product with id " + productId + " does not exist");
+        }
+    }
+
     // ----------------------------------------------------------------
     // HELPER FUNCTIONS FOR PRODUCTS
     // ----------------------------------------------------------------
@@ -208,6 +234,7 @@ public class ProductServiceImpl implements ProductService {
                 .price(model.getPrice())
                 .stock(model.getStock())
                 .categoryId(categoryId)
+                .active(model.isActive())
                 .image1(imageUrls.get(0))
                 .image2(imageUrls.get(1))
                 .image3(imageUrls.get(2))
@@ -243,7 +270,8 @@ public class ProductServiceImpl implements ProductService {
         if (productCategory.isPresent()) {
             return new ProductViewModel(product.getId(), product.getName(), product.getDescription(),
                     product.getPrice(),
-                    product.getStock(), productCategory.get().getCategory(), product.getImage1(), product.getImage2(),
+                    product.getStock(), productCategory.get().getCategory(), product.isActive(), product.getImage1(),
+                    product.getImage2(),
                     product.getImage3(),
                     product.getImage4(), product.getImage5(), product.getImage6(), product.getImage7(),
                     product.getImage8(), product.getImage9());

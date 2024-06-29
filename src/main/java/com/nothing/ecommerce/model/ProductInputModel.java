@@ -13,4 +13,5 @@ public class ProductInputModel {
     private double price;
     private int stock;
     private String category;
+    private boolean active;
 }

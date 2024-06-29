@@ -33,6 +33,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                 .requestMatchers(HttpMethod.GET, "/testseller").hasRole("SELLER")
                 .requestMatchers(HttpMethod.GET, "/testbuyer").hasRole("BUYER")
+                .requestMatchers(HttpMethod.POST, "/products").hasRole("SELLER")
+                .requestMatchers(HttpMethod.PUT, "/products").hasRole("SELLER")
                 .anyRequest().authenticated());
 
         // transfering exception control to JWTAuthenticationEntryPoint

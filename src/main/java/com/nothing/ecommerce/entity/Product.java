@@ -34,6 +34,8 @@ public class Product {
     private int stock;
     @Column(name = "category_id")
     private int categoryId;
+    @Column(name = "active")
+    private boolean active;
     @Column(name = "image1")
     private String image1;
     @Column(name = "image2")

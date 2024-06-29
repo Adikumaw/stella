@@ -43,7 +43,8 @@ public class ProductController {
             @RequestParam("description") String description,
             @RequestParam("price") double price,
             @RequestParam("stock") int stock,
-            @RequestParam("category") String category) {
+            @RequestParam("category") String category,
+            @RequestParam("active") boolean active) {
 
         if (jwtService.verifyJwtHeader(jwtHeader)) {
 
@@ -52,7 +53,7 @@ public class ProductController {
                 String reference = jwtService.fetchReference(jwtToken);
 
                 ProductInputModel model = new ProductInputModel(name, description, price,
-                        stock, category);
+                        stock, category, active);
 
                 if (images.get(0).isEmpty()) {
                     images = null;
@@ -127,7 +128,8 @@ public class ProductController {
             @RequestParam("description") String description,
             @RequestParam("price") double price,
             @RequestParam("stock") int stock,
-            @RequestParam("category") String category) {
+            @RequestParam("category") String category,
+            @RequestParam("active") boolean active) {
 
         if (jwtService.verifyJwtHeader(jwtHeader)) {
 
@@ -136,7 +138,7 @@ public class ProductController {
                 String reference = jwtService.fetchReference(jwtToken);
 
                 ProductUpdateModel model = new ProductUpdateModel(id, name, description, price,
-                        stock, category);
+                        stock, category, active);
 
                 if (images.get(0).isEmpty()) {
                     images = null;
@@ -160,4 +162,30 @@ public class ProductController {
         }
     }
 
+    @PutMapping("/deactivate")
+    public ProductViewModel deactivate(@RequestHeader("Authorization") String jwtHeader,
+            @RequestParam("id") int id) {
+        if (jwtService.verifyJwtHeader(jwtHeader)) {
+
+            String jwtToken = jwtHeader.substring(7);
+            try {
+                String reference = jwtService.fetchReference(jwtToken);
+
+                return productService.deactivate(reference, id);
+            } catch (IllegalArgumentException e) {
+                throw e;
+            } catch (ImageException e) {
+                throw e;
+            } catch (ProductException e) {
+                throw e;
+            } catch (UserException e) {
+                throw e;
+            } catch (Exception e) {
+                logger.error("Unknown error: " + e.getMessage(), e);
+                throw new UnknownErrorException("Error: unknown error");
+            }
+        } else {
+            throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
+        }
+    }
 }
