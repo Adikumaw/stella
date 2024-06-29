@@ -1,7 +1,7 @@
 package com.nothing.ecommerce.services;
 
-import com.nothing.ecommerce.entity.User;
 import com.nothing.ecommerce.model.UserInputModel;
+import com.nothing.ecommerce.model.UserViewModel;
 
 public interface UserAdvanceService {
 
@@ -15,9 +15,9 @@ public interface UserAdvanceService {
 
     boolean verifyUpdate(String token);
 
-    User updateName(int userId, String name);
+    UserViewModel updateName(int userId, String name);
 
-    User updateName(String reference, String name);
+    UserViewModel updateName(String reference, String name);
 
     void updateNumber(int userId, String number);
 

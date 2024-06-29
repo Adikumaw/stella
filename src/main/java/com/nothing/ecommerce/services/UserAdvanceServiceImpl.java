@@ -16,9 +16,9 @@ import com.nothing.ecommerce.entity.Roles;
 import com.nothing.ecommerce.entity.UpdateVerificationToken;
 import com.nothing.ecommerce.miscellaneous.*;
 import com.nothing.ecommerce.model.UserInputModel;
+import com.nothing.ecommerce.model.UserViewModel;
 import com.nothing.ecommerce.repository.RolesRepository;
 import com.nothing.ecommerce.repository.UserRepository;
-import com.nothing.ecommerce.exception.IllegalRoleException;
 import com.nothing.ecommerce.exception.InvalidEmailException;
 import com.nothing.ecommerce.exception.InvalidNumberException;
 import com.nothing.ecommerce.exception.InvalidPasswordException;
@@ -105,13 +105,15 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
         if (updateVerificationTokenService.verify(updateVerificationToken)) {
             // fetch and set updated value to user
             int userId = updateVerificationToken.getUserId();
-            String data = updateVerificationToken.getData();
+            String dataWithPrefix = updateVerificationToken.getData();
+            String prefix = updateVerificationTokenService.getPrefix(dataWithPrefix);
+            String data = updateVerificationTokenService.fetchData(dataWithPrefix);
             User user = userRepository.findById(userId).get();
             // check if data is number or email
-            if (Miscellaneous.isValidEmail(data)) {
+            if (prefix == "email") {
                 user.setEmail(data);
             }
-            if (Miscellaneous.isValidNumber(data)) {
+            if (prefix == "number") {
                 user.setNumber(data);
             }
             // Save updated value to user
@@ -132,23 +134,23 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
     }
 
     @Override
-    public User updateName(int userId, String name) {
+    public UserViewModel updateName(int userId, String name) {
         User fetchedUser = userService.get(userId);
         if (fetchedUser != null) {
             fetchedUser.setName(name);
-            return userRepository.save(fetchedUser);
+            return userService.converToViewModel(userRepository.save(fetchedUser));
         }
         return null;
     }
 
     @Override
-    public User updateName(String reference, String name) {
+    public UserViewModel updateName(String reference, String name) {
         int userId = userService.findUserIdByReference(reference);
 
         User fetchedUser = userService.get(userId);
         if (fetchedUser != null) {
             fetchedUser.setName(name);
-            return userRepository.save(fetchedUser);
+            return userService.converToViewModel(userRepository.save(fetchedUser));
         }
         return null;
     }
@@ -166,7 +168,8 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
                 // Generate Verification Token
                 UpdateVerificationToken updateVerificationToken = updateVerificationTokenService.generate(
                         userId,
-                        number);
+                        number,
+                        "number");
 
                 // send verification email
                 updateVerificationTokenService.sender(user, updateVerificationToken);
@@ -188,7 +191,8 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
                 // Generate Verification Token
                 UpdateVerificationToken updateVerificationToken = updateVerificationTokenService.generate(
                         userId,
-                        number);
+                        number,
+                        "number");
                 // send verification email
                 updateVerificationTokenService.sender(user, updateVerificationToken);
             }
@@ -208,7 +212,8 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
                 // Generate Verification Token
                 UpdateVerificationToken updateVerificationToken = updateVerificationTokenService.generate(
                         userId,
-                        email);
+                        email,
+                        "email");
 
                 // send verification email
                 updateVerificationTokenService.sender(user, updateVerificationToken);
@@ -230,7 +235,8 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
                 // Generate Verification Token
                 UpdateVerificationToken updateVerificationToken = updateVerificationTokenService.generate(
                         userId,
-                        email);
+                        email,
+                        "email");
 
                 // send verification email
                 updateVerificationTokenService.sender(user, updateVerificationToken);

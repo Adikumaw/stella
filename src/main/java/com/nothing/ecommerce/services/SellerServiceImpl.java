@@ -1,14 +1,21 @@
 package com.nothing.ecommerce.services;
 
+import java.util.Optional;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.InvalidDataAccessApiUsageException;
 
 import com.nothing.ecommerce.entity.Roles;
 import com.nothing.ecommerce.entity.Seller;
+import com.nothing.ecommerce.entity.UpdateVerificationToken;
 import com.nothing.ecommerce.entity.User;
-import com.nothing.ecommerce.entity.VerificationToken;
 import com.nothing.ecommerce.exception.InvalidSellerAddressException;
 import com.nothing.ecommerce.exception.InvalidStoreNameException;
+import com.nothing.ecommerce.exception.SellerExistsException;
 import com.nothing.ecommerce.model.SellerInputModel;
+import com.nothing.ecommerce.model.SellerViewModel;
 import com.nothing.ecommerce.model.UserInputModel;
 import com.nothing.ecommerce.repository.RolesRepository;
 import com.nothing.ecommerce.repository.SellerRepository;
@@ -23,6 +30,10 @@ public class SellerServiceImpl implements SellerService {
     private RolesRepository rolesRepository;
     @Autowired
     private SellerRepository sellerRepository;
+    @Autowired
+    private UpdateVerificationTokenService updateVerificationTokenService;
+
+    private static final Logger logger = LoggerFactory.getLogger(SellerServiceImpl.class);
 
     @Override
     public boolean register(SellerInputModel model) {
@@ -44,19 +55,71 @@ public class SellerServiceImpl implements SellerService {
         return (seller != null) ? true : false;
     }
 
-    private void verifySellerDetails(SellerInputModel model) {
-        if (model.getStoreName() == null || model.getStoreName().isEmpty()) {
-            throw new InvalidStoreNameException("Error: Empty Store name");
+    @Override
+    public boolean verifyUpdate(String token) {
+        // fetch token from Database
+        UpdateVerificationToken updateVerificationToken = updateVerificationTokenService.findByToken(token);
+        // check if token exist and not expired
+        if (updateVerificationTokenService.verify(updateVerificationToken)) {
+            // fetch and set updated value to user
+            int userId = updateVerificationToken.getUserId();
+            String dataWithPrefix = updateVerificationToken.getData();
+            String prefix = updateVerificationTokenService.getPrefix(dataWithPrefix);
+            String data = updateVerificationTokenService.fetchData(dataWithPrefix);
+            Seller seller = sellerRepository.findById(userId).get();
+            // check if data is number or email
+            if (prefix == "storename") {
+                seller.setStoreName(data);
+            }
+            // Save updated value to seller
+            sellerRepository.save(seller);
+
+            // Delete verification token
+            updateVerificationTokenService.delete(updateVerificationToken);
+            return true;
         }
-        if (model.getAddress() == null || model.getAddress().isEmpty()) {
-            throw new InvalidSellerAddressException("Error: Address must be specified");
+        try {
+            updateVerificationTokenService.delete(updateVerificationToken);
+        } catch (InvalidDataAccessApiUsageException e) {
+            logger.error("Error deleting verification token: " + e.getMessage(), e);
+        } catch (Exception e) {
+            logger.error("Unknown error: " + e.getMessage(), e);
+        }
+        return false;
+    }
+
+    @Override
+    public void updateStoreName(String reference, String storeName) {
+        int userId = userService.findUserIdByReference(reference);
+        // check if storeName is already userd or not
+        if (sellerRepository.existsByStoreName(storeName)) {
+            throw new SellerExistsException("Error: " + storeName + " is already used");
+        }
+        Optional<Seller> optionalSeller = sellerRepository.findById(userId);
+        if (optionalSeller.isPresent() && storeName != null && !storeName.isEmpty()) {
+            // Generate Verification Token
+            UpdateVerificationToken updateVerificationToken = updateVerificationTokenService.generate(
+                    userId,
+                    storeName,
+                    "storename");
+
+            // send verification email
+            updateVerificationTokenService.sender(reference);
         }
     }
 
     @Override
-    public boolean verifyUpdate(String token) {
-        // TODO Auto-generated method stub
-        throw new UnsupportedOperationException("Unimplemented method 'verifyUpdate'");
+    public SellerViewModel updateAddress(String reference, String address) {
+        int userId = userService.findUserIdByReference(reference);
+        Optional<Seller> optionalSeller = sellerRepository.findById(userId);
+        if (optionalSeller.isPresent() && address != null && !address.isEmpty()) {
+            Seller seller = optionalSeller.get();
+            seller.setAddress(address);
+            seller = sellerRepository.save(seller);
+            User user = userService.findById(userId);
+            return new SellerViewModel(user, seller);
+        }
+        return null;
     }
 
     private UserInputModel convertSellerToUserInputModel(SellerInputModel model) {
@@ -66,4 +129,12 @@ public class SellerServiceImpl implements SellerService {
         return userInputModel;
     }
 
+    private void verifySellerDetails(SellerInputModel model) {
+        if (model.getStoreName() == null || model.getStoreName().isEmpty()) {
+            throw new InvalidStoreNameException("Error: Empty Store name");
+        }
+        if (model.getAddress() == null || model.getAddress().isEmpty()) {
+            throw new InvalidSellerAddressException("Error: Address must be specified");
+        }
+    }
 }

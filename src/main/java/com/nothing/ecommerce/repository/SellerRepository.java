@@ -6,4 +6,7 @@ import com.nothing.ecommerce.entity.Seller;
 
 public interface SellerRepository extends JpaRepository<Seller, Integer> {
 
+    Boolean existsByStoreName(String storeName);
+
+    Boolean existsByAddress(String address);
 }

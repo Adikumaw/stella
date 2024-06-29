@@ -2,8 +2,6 @@ package com.nothing.ecommerce.entity;
 
 import java.util.Date;
 
-import com.nothing.ecommerce.model.SellerInputModel;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Id;

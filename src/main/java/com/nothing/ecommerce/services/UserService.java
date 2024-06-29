@@ -18,6 +18,8 @@ public interface UserService {
 
     User findByEmail(String email);
 
+    User findById(int userId);
+
     User get(int userId);
 
     User get(String reference);

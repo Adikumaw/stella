@@ -107,7 +107,7 @@ public class UserController {
             try {
                 String reference = jwtService.fetchReference(jwtToken);
 
-                return userService.converToViewModel(userAdvanceService.updateName(reference, name));
+                return userAdvanceService.updateName(reference, name);
             } catch (IllegalArgumentException e) {
                 throw e;
             } catch (UserException e) {

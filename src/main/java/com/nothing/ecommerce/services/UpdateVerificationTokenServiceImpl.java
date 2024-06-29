@@ -57,6 +57,7 @@ public class UpdateVerificationTokenServiceImpl implements UpdateVerificationTok
     @Override
     public void sender(User user, UpdateVerificationToken updateVerificationToken) {
         String data = updateVerificationToken.getData();
+        data = fetchData(data);
         String email = null;
         if (Miscellaneous.isValidEmail(data)) {
             email = data;
@@ -122,7 +123,8 @@ public class UpdateVerificationTokenServiceImpl implements UpdateVerificationTok
     }
 
     @Override
-    public UpdateVerificationToken generate(int userId, String data) {
+    public UpdateVerificationToken generate(int userId, String data, String prefix) {
+        data = setPrefix(data, prefix);
         // check if data is not used before
         UpdateVerificationToken updateVerificationToken = findByData(data);
         if (updateVerificationToken != null) {
@@ -135,5 +137,29 @@ public class UpdateVerificationTokenServiceImpl implements UpdateVerificationTok
         updateVerificationToken = new UpdateVerificationToken(data, token, userId);
 
         return save(updateVerificationToken);
+    }
+
+    @Override
+    public String getPrefix(String data) {
+        if (data == null || data.isEmpty()) {
+            return ""; // Return empty string for null or empty input
+        }
+        int indexOfColon = data.indexOf(":");
+        return indexOfColon > 0 ? data.substring(0, indexOfColon) : data;
+    }
+
+    @Override
+    public String setPrefix(String data, String prefix) {
+        return prefix + ":" + data;
+    }
+
+    @Override
+    public String fetchData(String data) {
+        if (data == null || data.isEmpty()) {
+            return ""; // Return empty string for null or empty input
+        }
+        int indexOfColon = data.indexOf(":");
+        return indexOfColon > 0 ? data.substring(indexOfColon + 1) : data;
+
     }
 }

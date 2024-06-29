@@ -20,5 +20,11 @@ public interface UpdateVerificationTokenService {
 
     boolean verify(UpdateVerificationToken token);
 
-    UpdateVerificationToken generate(int userId, String data);
+    UpdateVerificationToken generate(int userId, String data, String prefix);
+
+    String getPrefix(String data);
+
+    String setPrefix(String data, String prefix);
+
+    String fetchData(String data);
 }
