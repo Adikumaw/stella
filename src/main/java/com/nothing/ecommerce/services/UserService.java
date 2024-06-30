@@ -27,6 +27,4 @@ public interface UserService {
     User save(User user);
 
     UserViewModel getInfo(String reference);
-
-    UserViewModel converToViewModel(User user);
 }

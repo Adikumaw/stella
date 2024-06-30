@@ -34,7 +34,7 @@ public class ProductServiceImpl implements ProductService {
     private ProductCategoryRepository categoryRepository;
     @Autowired
     private ImageService imageService;
-    private final String path = "/home/all_father/Documents/workshop/java/ecommerce/src/main/resources/static/img";
+    private final static String path = "/home/all_father/Documents/workshop/java/ecommerce/src/main/resources/static/products";
 
     @Override
     public ProductViewModel save(String reference, ProductInputModel model, List<MultipartFile> images) {

@@ -6,14 +6,18 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.nothing.ecommerce.entity.Roles;
 import com.nothing.ecommerce.entity.Seller;
 import com.nothing.ecommerce.entity.UpdateVerificationToken;
 import com.nothing.ecommerce.entity.User;
+import com.nothing.ecommerce.exception.EmptyImagesException;
+import com.nothing.ecommerce.exception.ImageException;
 import com.nothing.ecommerce.exception.InvalidSellerAddressException;
 import com.nothing.ecommerce.exception.InvalidStoreNameException;
 import com.nothing.ecommerce.exception.SellerExistsException;
+import com.nothing.ecommerce.exception.SellerNotFoundException;
 import com.nothing.ecommerce.model.SellerInputModel;
 import com.nothing.ecommerce.model.SellerUpgradeModel;
 import com.nothing.ecommerce.model.SellerViewModel;
@@ -32,16 +36,19 @@ public class SellerServiceImpl implements SellerService {
     @Autowired
     private SellerRepository sellerRepository;
     @Autowired
+    private ImageService imageService;
+    @Autowired
     private UpdateVerificationTokenService updateVerificationTokenService;
+    private final static String path = "/home/all_father/Documents/workshop/java/ecommerce/src/main/resources/static/storeLogos";
 
     private static final Logger logger = LoggerFactory.getLogger(SellerServiceImpl.class);
 
     @Override
     public boolean register(SellerInputModel model) {
         // vrify seller details
-        verifySellerDetails(model);
+        verifySellerInputModel(model);
 
-        UserInputModel userModel = convertSellerToUserInputModel(model);
+        UserInputModel userModel = new UserInputModel(model);
         userAdvanceService.register(userModel);
 
         int userId = userService.findUserIdByEmail(model.getEmail());
@@ -59,12 +66,7 @@ public class SellerServiceImpl implements SellerService {
     @Override
     public boolean upgradeToSeller(String reference, SellerUpgradeModel model) {
         // vrify seller details
-        if (model.getStoreName() == null || model.getStoreName().isEmpty()) {
-            throw new InvalidStoreNameException("Error: Empty Store name");
-        }
-        if (model.getAddress() == null || model.getAddress().isEmpty()) {
-            throw new InvalidSellerAddressException("Error: Address must be specified");
-        }
+        verifySellerUpgradeModel(model);
 
         int userId = userService.findUserIdByReference(reference);
 
@@ -145,14 +147,43 @@ public class SellerServiceImpl implements SellerService {
         return null;
     }
 
-    private UserInputModel convertSellerToUserInputModel(SellerInputModel model) {
-        UserInputModel userInputModel = new UserInputModel(model.getName(), model.getEmail(), model.getNumber(),
-                model.getPassword());
+    @Override
+    public SellerViewModel addLogo(String reference, MultipartFile logoFile) {
 
-        return userInputModel;
+        // verify Images input is not empty
+        if (logoFile == null || logoFile.isEmpty()) {
+            throw new EmptyImagesException("Error: Empty images");
+        }
+
+        int userId = userService.findUserIdByReference(reference);
+
+        String imageUrl = imageService.save(userId, logoFile, path);
+
+        if (imageUrl.isEmpty() || imageUrl == null) {
+            throw new ImageException("Error: Failed to save Logo");
+        }
+
+        Optional<Seller> optionalSeller = sellerRepository.findById(userId);
+
+        if (optionalSeller.isPresent()) {
+            Seller seller = optionalSeller.get();
+            seller.setLogo(imageUrl);
+            sellerRepository.save(seller);
+            return new SellerViewModel(userService.findById(userId), seller);
+        }
+        throw new SellerNotFoundException("Error: you don't have seller account");
     }
 
-    private void verifySellerDetails(SellerInputModel model) {
+    private void verifySellerInputModel(SellerInputModel model) {
+        if (model.getStoreName() == null || model.getStoreName().isEmpty()) {
+            throw new InvalidStoreNameException("Error: Empty Store name");
+        }
+        if (model.getAddress() == null || model.getAddress().isEmpty()) {
+            throw new InvalidSellerAddressException("Error: Address must be specified");
+        }
+    }
+
+    private void verifySellerUpgradeModel(SellerUpgradeModel model) {
         if (model.getStoreName() == null || model.getStoreName().isEmpty()) {
             throw new InvalidStoreNameException("Error: Empty Store name");
         }

@@ -138,7 +138,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
         User fetchedUser = userService.get(userId);
         if (fetchedUser != null) {
             fetchedUser.setName(name);
-            return userService.converToViewModel(userRepository.save(fetchedUser));
+            return new UserViewModel(userRepository.save(fetchedUser));
         }
         return null;
     }
@@ -150,7 +150,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
         User fetchedUser = userService.get(userId);
         if (fetchedUser != null) {
             fetchedUser.setName(name);
-            return userService.converToViewModel(userRepository.save(fetchedUser));
+            return new UserViewModel(userRepository.save(fetchedUser));
         }
         return null;
     }

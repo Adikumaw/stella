@@ -65,6 +65,46 @@ public class ImageServiceImpl implements ImageService {
         return imageUrls;
     }
 
+    @Override
+    public String save(int userId, MultipartFile image, String destinationPath) {
+        String imageUrl = null;
+
+        try {
+
+            // Validate filename extension
+            String originalFilename = image.getOriginalFilename();
+            String extension = FilenameUtils.getExtension(originalFilename);
+            if (!isValidImageExtension(extension)) {
+                throw new InvalidImageExtentionException("Error: Invalid Image Extention " + extension);
+            }
+
+            // Construct destination file path
+            StringBuilder filePathBuilder = new StringBuilder();
+            filePathBuilder.append(destinationPath).append("/")
+                    .append(userId).append("/")
+                    .append("logo").append(".").append(extension);
+            String filePath = filePathBuilder.toString();
+
+            File destinationFile = new File(filePath);
+            File userDirectory = destinationFile.getParentFile();
+
+            // Create parent directories if they don't exist
+            if (!userDirectory.exists()) {
+                userDirectory.mkdirs();
+            }
+
+            // Save the file
+            FileUtils.copyInputStreamToFile(image.getInputStream(), destinationFile);
+
+            // Add the file URL to the list
+            imageUrl = filePath;
+        } catch (IOException e) {
+            throw new ImageException("Error occurred while saving image: ", e);
+        }
+
+        return imageUrl;
+    }
+
     private boolean isValidImageExtension(String extension) {
         // Define valid image extensions
         List<String> validExtensions = Arrays.asList("jpg", "jpeg", "png", "gif", "bmp");

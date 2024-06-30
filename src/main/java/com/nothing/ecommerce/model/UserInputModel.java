@@ -12,4 +12,11 @@ public class UserInputModel {
     private String email;
     private String number;
     private String password;
+
+    public UserInputModel(SellerInputModel model) {
+        this.name = model.getName();
+        this.email = model.getEmail();
+        this.number = model.getNumber();
+        this.password = model.getPassword();
+    }
 }

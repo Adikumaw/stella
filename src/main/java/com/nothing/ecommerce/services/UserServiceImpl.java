@@ -103,12 +103,7 @@ public class UserServiceImpl implements UserService {
     public UserViewModel getInfo(String reference) {
         User user = get(reference);
 
-        return converToViewModel(user);
+        return new UserViewModel(user);
     }
 
-    @Override
-    public UserViewModel converToViewModel(User user) {
-        return new UserViewModel(user.getName(), user.getEmail(), user.getNumber(),
-                user.getActive());
-    }
 }
