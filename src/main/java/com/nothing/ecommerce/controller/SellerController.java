@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.nothing.ecommerce.exception.InvalidJWTHeaderException;
 import com.nothing.ecommerce.exception.SellerException;
@@ -116,6 +117,31 @@ public class SellerController {
                 String reference = jwtService.fetchReference(jwtToken);
 
                 return sellerService.updateAddress(reference, address);
+            } catch (IllegalArgumentException e) {
+                throw e;
+            } catch (UserException e) {
+                throw e;
+            } catch (SellerException e) {
+                throw e;
+            } catch (Exception e) {
+                logger.error("Unknown error: " + e.getMessage(), e);
+                throw new UnknownErrorException("Error: unknown error");
+            }
+        } else {
+            throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
+        }
+    }
+
+    @PostMapping("/logo")
+    public SellerViewModel addLogo(@RequestParam("logo") MultipartFile logoFile,
+            @RequestHeader("Authorization") String jwtHeader) {
+        if (jwtService.verifyJwtHeader(jwtHeader)) {
+            // extract token from request header
+            String jwtToken = jwtHeader.substring(7);
+            try {
+                String reference = jwtService.fetchReference(jwtToken);
+
+                return sellerService.addLogo(reference, logoFile);
             } catch (IllegalArgumentException e) {
                 throw e;
             } catch (UserException e) {

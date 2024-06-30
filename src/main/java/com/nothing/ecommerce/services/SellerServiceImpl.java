@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
+import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.nothing.ecommerce.entity.Roles;
@@ -25,6 +26,7 @@ import com.nothing.ecommerce.model.UserInputModel;
 import com.nothing.ecommerce.repository.RolesRepository;
 import com.nothing.ecommerce.repository.SellerRepository;
 
+@Service
 public class SellerServiceImpl implements SellerService {
 
     @Autowired

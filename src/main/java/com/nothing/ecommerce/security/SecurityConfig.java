@@ -34,6 +34,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/sellers/verify-update*").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/sellers/store-name").hasRole("SELLER")
                 .requestMatchers(HttpMethod.PUT, "/sellers/address").hasRole("SELLER")
+                .requestMatchers(HttpMethod.POST, "/sellers/logo").hasRole("SELLER")
                 .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
                 .requestMatchers(HttpMethod.GET, "/testseller").hasRole("SELLER")
                 .requestMatchers(HttpMethod.GET, "/testbuyer").hasRole("BUYER")
