@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import com.nothing.ecommerce.entity.User;
 import com.nothing.ecommerce.exception.InvalidEmailException;
+import com.nothing.ecommerce.exception.InvalidEmailOrNumberException;
 import com.nothing.ecommerce.exception.UserNotFoundException;
 import com.nothing.ecommerce.miscellaneous.Miscellaneous;
 import com.nothing.ecommerce.model.UserViewModel;
@@ -86,7 +87,7 @@ public class UserServiceImpl implements UserService {
                 throw new UserNotFoundException("Error: User not found");
             }
         }
-        throw new IllegalArgumentException("Error: Invalid Email address or Number: " + reference);
+        throw new InvalidEmailOrNumberException("Error: Invalid Email address or Number: " + reference);
     }
 
     @Override

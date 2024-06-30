@@ -43,16 +43,32 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody UserInputModel userModel) {
-        userAdvanceService.register(userModel);
-
-        return ResponseEntity.status(HttpStatus.OK).body("Success");
+        try {
+            if (userAdvanceService.register(userModel)) {
+                return ResponseEntity.status(HttpStatus.OK).body("Success");
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to register");
+            }
+        } catch (UserException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.error("Unknown error: " + e.getMessage(), e);
+            throw new UnknownErrorException("Error: unknown error");
+        }
     }
 
     @GetMapping("/register/resend-token")
     public ResponseEntity<String> resendToken(@RequestBody String reference) {
-        verificationTokenService.sender(reference);
+        try {
+            verificationTokenService.sender(reference);
 
-        return ResponseEntity.status(HttpStatus.OK).body("Success");
+            return ResponseEntity.status(HttpStatus.OK).body("Success");
+        } catch (UserException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.error("Unknown error: " + e.getMessage(), e);
+            throw new UnknownErrorException("Error: unknown error");
+        }
     }
 
     @GetMapping("/verify-user")
@@ -86,8 +102,6 @@ public class UserController {
                 String reference = jwtService.fetchReference(jwtToken);
 
                 return userService.getInfo(reference);
-            } catch (IllegalArgumentException e) {
-                throw e;
             } catch (UserException e) {
                 throw e;
             } catch (Exception e) {
@@ -108,8 +122,6 @@ public class UserController {
                 String reference = jwtService.fetchReference(jwtToken);
 
                 return userAdvanceService.updateName(reference, name);
-            } catch (IllegalArgumentException e) {
-                throw e;
             } catch (UserException e) {
                 throw e;
             } catch (Exception e) {
@@ -134,8 +146,6 @@ public class UserController {
 
                 return ResponseEntity.status(HttpStatus.OK).body("Success");
 
-            } catch (IllegalArgumentException e) {
-                throw e;
             } catch (UserException e) {
                 throw e;
             } catch (Exception e) {
@@ -160,8 +170,6 @@ public class UserController {
 
                 return ResponseEntity.status(HttpStatus.OK).body("Success");
 
-            } catch (IllegalArgumentException e) {
-                throw e;
             } catch (UserException e) {
                 throw e;
             } catch (Exception e) {
@@ -187,8 +195,6 @@ public class UserController {
 
                 return ResponseEntity.status(HttpStatus.OK).body("Success");
 
-            } catch (IllegalArgumentException e) {
-                throw e;
             } catch (UserException e) {
                 throw e;
             } catch (Exception e) {
@@ -213,8 +219,6 @@ public class UserController {
 
                 return ResponseEntity.status(HttpStatus.OK).body("Success");
 
-            } catch (IllegalArgumentException e) {
-                throw e;
             } catch (UserException e) {
                 throw e;
             } catch (Exception e) {
@@ -236,8 +240,6 @@ public class UserController {
     // String reference = jwtService.fetchReference(jwtToken);
     // userAdvanceService.delete(reference);
     // return ResponseEntity.status(HttpStatus.OK).body("Success");
-    // } catch (IllegalArgumentException e) {
-    // throw e;
     // } catch (UserException e) {
     // throw e;
     // } catch (Exception e) {

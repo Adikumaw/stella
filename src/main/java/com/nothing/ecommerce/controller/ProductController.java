@@ -60,8 +60,6 @@ public class ProductController {
                 }
 
                 return productService.save(reference, model, images);
-            } catch (IllegalArgumentException e) {
-                throw e;
             } catch (ImageException e) {
                 throw e;
             } catch (ProductException e) {
@@ -87,8 +85,6 @@ public class ProductController {
 
                 return productService.getProductsByReference(reference);
 
-            } catch (IllegalArgumentException e) {
-                throw e;
             } catch (ProductException e) {
                 throw e;
             } catch (UserException e) {
@@ -108,8 +104,6 @@ public class ProductController {
 
             return productService.getProductsBySearch(name);
 
-        } catch (IllegalArgumentException e) {
-            throw e;
         } catch (ProductException e) {
             throw e;
         } catch (UserException e) {
@@ -145,8 +139,6 @@ public class ProductController {
                 }
 
                 return productService.update(reference, model, images);
-            } catch (IllegalArgumentException e) {
-                throw e;
             } catch (ImageException e) {
                 throw e;
             } catch (ProductException e) {
@@ -172,10 +164,6 @@ public class ProductController {
                 String reference = jwtService.fetchReference(jwtToken);
 
                 return productService.deactivate(reference, id);
-            } catch (IllegalArgumentException e) {
-                throw e;
-            } catch (ImageException e) {
-                throw e;
             } catch (ProductException e) {
                 throw e;
             } catch (UserException e) {

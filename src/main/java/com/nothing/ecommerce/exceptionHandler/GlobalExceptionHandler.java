@@ -20,11 +20,6 @@ public class GlobalExceptionHandler {
     }
 
     @ExceptionHandler
-    public ResponseEntity<String> handleException(IllegalRoleException exc) {
-        return new ResponseEntity<>(exc.getMessage(), HttpStatus.BAD_REQUEST);
-    }
-
-    @ExceptionHandler
     public ResponseEntity<NotFoundErrorResponse> handleException(UserNotFoundException exc) {
         // create response entity
         NotFoundErrorResponse resp = new NotFoundErrorResponse(

@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.nothing.ecommerce.exception.InvalidAddressException;
 import com.nothing.ecommerce.exception.InvalidJWTHeaderException;
 import com.nothing.ecommerce.exception.UnknownErrorException;
 import com.nothing.ecommerce.exception.UserException;
@@ -44,8 +45,6 @@ public class AddressController {
             try {
                 reference = jwtService.fetchReference(jwtToken);
                 return addressService.save(reference, addressModel);
-            } catch (IllegalArgumentException e) {
-                throw e;
             } catch (UserException e) {
                 throw e;
             } catch (Exception e) {
@@ -66,16 +65,14 @@ public class AddressController {
             String jwtToken = jwtHeader.substring(7);
             try {
                 reference = jwtService.fetchReference(jwtToken);
-            } catch (IllegalArgumentException e) {
-                throw e;
+
+                return addressService.getAddressModels(reference);
             } catch (UserException e) {
                 throw e;
             } catch (Exception e) {
                 logger.error("Unknown error: " + e.getMessage(), e);
                 throw new UnknownErrorException("Error: unknown error");
             }
-
-            return addressService.getAddressModels(reference);
         } else {
             throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
         }
@@ -91,28 +88,25 @@ public class AddressController {
             String jwtToken = jwtHeader.substring(7);
             try {
                 reference = jwtService.fetchReference(jwtToken);
-            } catch (IllegalArgumentException e) {
-                throw e;
+
+                AddressModel oldAddress = request.getOldAddress();
+                AddressModel newAddress = request.getNewAddress();
+
+                if (oldAddress != null && newAddress != null) {
+                    if (oldAddress != newAddress) {
+                        return addressService.update(reference, oldAddress, newAddress);
+                    } else {
+                        return addressService.getAddressModels(reference);
+                    }
+                } else {
+                    throw new InvalidAddressException("Error: Wrong Address");
+                }
             } catch (UserException e) {
                 throw e;
             } catch (Exception e) {
                 logger.error("Unknown error: " + e.getMessage(), e);
                 throw new UnknownErrorException("Error: unknown error");
             }
-
-            AddressModel oldAddress = request.getOldAddress();
-            AddressModel newAddress = request.getNewAddress();
-
-            if (oldAddress != null && newAddress != null) {
-                if (oldAddress != newAddress) {
-                    return addressService.update(reference, oldAddress, newAddress);
-                } else {
-                    return addressService.getAddressModels(reference);
-                }
-            } else {
-                throw new IllegalArgumentException("Error: Wrong Address");
-            }
-
         } else {
             throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
         }
@@ -128,16 +122,14 @@ public class AddressController {
             String jwtToken = jwtHeader.substring(7);
             try {
                 reference = jwtService.fetchReference(jwtToken);
-            } catch (IllegalArgumentException e) {
-                throw e;
+
+                return addressService.delete(reference, addressModel);
             } catch (UserException e) {
                 throw e;
             } catch (Exception e) {
                 logger.error("Unknown error: " + e.getMessage(), e);
                 throw new UnknownErrorException("Error: unknown error");
             }
-
-            return addressService.delete(reference, addressModel);
         } else {
             throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
         }

@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import com.nothing.ecommerce.exception.ImageException;
 import com.nothing.ecommerce.exception.InvalidJWTHeaderException;
 import com.nothing.ecommerce.exception.SellerException;
 import com.nothing.ecommerce.exception.UnknownErrorException;
@@ -37,9 +38,22 @@ public class SellerController {
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestBody SellerInputModel model) {
-        sellerService.register(model);
+        try {
 
-        return ResponseEntity.status(HttpStatus.OK).body("Success");
+            if (sellerService.register(model)) {
+                return ResponseEntity.status(HttpStatus.OK).body("Success");
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to register");
+            }
+
+        } catch (UserException e) {
+            throw e;
+        } catch (SellerException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.error("Unknown error: " + e.getMessage(), e);
+            throw new UnknownErrorException("Error: unknown error");
+        }
     }
 
     @PostMapping("/upgrade")
@@ -51,11 +65,11 @@ public class SellerController {
             try {
                 String reference = jwtService.fetchReference(jwtToken);
 
-                sellerService.upgradeToSeller(reference, model);
-
-                return ResponseEntity.status(HttpStatus.OK).body("Success");
-            } catch (IllegalArgumentException e) {
-                throw e;
+                if (sellerService.upgradeToSeller(reference, model)) {
+                    return ResponseEntity.status(HttpStatus.OK).body("Success");
+                } else {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failded to Upgrade");
+                }
             } catch (UserException e) {
                 throw e;
             } catch (SellerException e) {
@@ -71,12 +85,22 @@ public class SellerController {
 
     @GetMapping("/verify-update")
     public ResponseEntity<String> verifyUpdate(@RequestParam String token) {
-        boolean isVerified = sellerService.verifyUpdate(token);
+        try {
+            boolean isVerified = sellerService.verifyUpdate(token);
 
-        if (isVerified) {
-            return ResponseEntity.ok("update verified successfully!");
-        } else {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid or expired token");
+            if (isVerified) {
+                return ResponseEntity.ok("update verified successfully!");
+            } else {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid or expired token");
+            }
+
+        } catch (UserException e) {
+            throw e;
+        } catch (SellerException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.error("Unknown error: " + e.getMessage(), e);
+            throw new UnknownErrorException("Error: unknown error");
         }
     }
 
@@ -92,8 +116,6 @@ public class SellerController {
                 sellerService.updateStoreName(reference, storeName);
 
                 return ResponseEntity.status(HttpStatus.OK).body("Success");
-            } catch (IllegalArgumentException e) {
-                throw e;
             } catch (UserException e) {
                 throw e;
             } catch (SellerException e) {
@@ -117,8 +139,6 @@ public class SellerController {
                 String reference = jwtService.fetchReference(jwtToken);
 
                 return sellerService.updateAddress(reference, address);
-            } catch (IllegalArgumentException e) {
-                throw e;
             } catch (UserException e) {
                 throw e;
             } catch (SellerException e) {
@@ -142,11 +162,11 @@ public class SellerController {
                 String reference = jwtService.fetchReference(jwtToken);
 
                 return sellerService.addLogo(reference, logoFile);
-            } catch (IllegalArgumentException e) {
-                throw e;
             } catch (UserException e) {
                 throw e;
             } catch (SellerException e) {
+                throw e;
+            } catch (ImageException e) {
                 throw e;
             } catch (Exception e) {
                 logger.error("Unknown error: " + e.getMessage(), e);
@@ -167,11 +187,11 @@ public class SellerController {
                 String reference = jwtService.fetchReference(jwtToken);
 
                 return sellerService.addLogo(reference, logoFile);
-            } catch (IllegalArgumentException e) {
-                throw e;
             } catch (UserException e) {
                 throw e;
             } catch (SellerException e) {
+                throw e;
+            } catch (ImageException e) {
                 throw e;
             } catch (Exception e) {
                 logger.error("Unknown error: " + e.getMessage(), e);

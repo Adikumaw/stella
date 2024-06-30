@@ -3,8 +3,8 @@ package com.nothing.ecommerce.exception;
 import lombok.NoArgsConstructor;
 
 @NoArgsConstructor
-public class InvalidJWTHeaderException extends JwtException {
-    public InvalidJWTHeaderException(String message) {
+public class InvalidEmailOrNumberException extends UserException {
+    public InvalidEmailOrNumberException(String message) {
         super(message);
     }
 }
