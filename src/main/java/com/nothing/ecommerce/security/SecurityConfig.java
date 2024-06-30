@@ -26,18 +26,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
+                // USER ENDPOINTS
                 .requestMatchers(HttpMethod.POST, "/users/register").permitAll()
                 .requestMatchers(HttpMethod.GET, "/users/verify-user*").permitAll()
                 .requestMatchers(HttpMethod.GET, "/users/verify-update*").permitAll()
                 .requestMatchers(HttpMethod.GET, "/users/register/resend_token").permitAll()
+                // SELLER ENDPOINTS
                 .requestMatchers(HttpMethod.POST, "/sellers/register").permitAll()
                 .requestMatchers(HttpMethod.GET, "/sellers/verify-update*").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/sellers/store-name").hasRole("SELLER")
                 .requestMatchers(HttpMethod.PUT, "/sellers/address").hasRole("SELLER")
                 .requestMatchers(HttpMethod.POST, "/sellers/logo").hasRole("SELLER")
+                .requestMatchers(HttpMethod.PUT, "/sellers/logo").hasRole("SELLER")
+                // LOGIN ENDPOINTS
                 .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                // TEST ENDPOINTS
                 .requestMatchers(HttpMethod.GET, "/testseller").hasRole("SELLER")
                 .requestMatchers(HttpMethod.GET, "/testbuyer").hasRole("BUYER")
+                // PRODUCT ENDPOINTS
                 .requestMatchers(HttpMethod.POST, "/products").hasRole("SELLER")
                 .requestMatchers(HttpMethod.PUT, "/products").hasRole("SELLER")
                 .anyRequest().authenticated());

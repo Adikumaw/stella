@@ -157,4 +157,29 @@ public class SellerController {
         }
     }
 
+    @PutMapping("/logo")
+    public SellerViewModel updateLogo(@RequestParam("logo") MultipartFile logoFile,
+            @RequestHeader("Authorization") String jwtHeader) {
+        if (jwtService.verifyJwtHeader(jwtHeader)) {
+            // extract token from request header
+            String jwtToken = jwtHeader.substring(7);
+            try {
+                String reference = jwtService.fetchReference(jwtToken);
+
+                return sellerService.addLogo(reference, logoFile);
+            } catch (IllegalArgumentException e) {
+                throw e;
+            } catch (UserException e) {
+                throw e;
+            } catch (SellerException e) {
+                throw e;
+            } catch (Exception e) {
+                logger.error("Unknown error: " + e.getMessage(), e);
+                throw new UnknownErrorException("Error: unknown error");
+            }
+        } else {
+            throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
+        }
+    }
+
 }

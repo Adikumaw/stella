@@ -93,6 +93,11 @@ public class ImageServiceImpl implements ImageService {
                 userDirectory.mkdirs();
             }
 
+            // Delete old logo if it exists
+            for (File oldLogos : userDirectory.listFiles()) {
+                oldLogos.delete();
+            }
+
             // Save the file
             FileUtils.copyInputStreamToFile(image.getInputStream(), destinationFile);
 
