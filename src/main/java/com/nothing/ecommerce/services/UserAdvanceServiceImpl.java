@@ -110,10 +110,10 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
             String data = updateVerificationTokenService.fetchData(dataWithPrefix);
             User user = userRepository.findById(userId).get();
             // check if data is number or email
-            if (prefix == "email") {
+            if (prefix.equals("email")) {
                 user.setEmail(data);
             }
-            if (prefix == "number") {
+            if (prefix.equals("number")) {
                 user.setNumber(data);
             }
             // Save updated value to user

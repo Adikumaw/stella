@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.nothing.ecommerce.entity.Address;
 import com.nothing.ecommerce.exception.InvalidAddressException;
+import com.nothing.ecommerce.exception.InvalidOldAddressException;
 import com.nothing.ecommerce.model.AddressModel;
 import com.nothing.ecommerce.repository.AddressRepository;
 
@@ -149,11 +150,13 @@ public class AddressServiceImpl implements AddressService {
     @Override
     public List<AddressModel> update(String reference, AddressModel oldAddress, AddressModel newAddress) {
         int userId = userService.findUserIdByReference(reference);
+        Boolean addressFound = false;
 
         List<Address> addresses = getAddresses(userId);
 
         for (Address address : addresses) {
             if (address.equals(oldAddress)) {
+                addressFound = true;
                 if (!newAddress.getStreetAddress().isEmpty()) {
                     address.setStreetAddress(newAddress.getStreetAddress());
                 }
@@ -182,7 +185,11 @@ public class AddressServiceImpl implements AddressService {
                 break;
             }
         }
-        return getAddressModels(userId);
+        if (addressFound) {
+            return getAddressModels(userId);
+        } else {
+            throw new InvalidOldAddressException("Error: Old Address was not found");
+        }
     }
 
     @Override
