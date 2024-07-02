@@ -33,6 +33,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/users/register/resend_token").permitAll()
                 // SELLER ENDPOINTS
                 .requestMatchers(HttpMethod.POST, "/sellers/register").permitAll()
+                .requestMatchers(HttpMethod.POST, "/sellers/upgrade").hasRole("BUYER")
                 .requestMatchers(HttpMethod.GET, "/sellers/verify-update*").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/sellers/store-name").hasRole("SELLER")
                 .requestMatchers(HttpMethod.PUT, "/sellers/address").hasRole("SELLER")
@@ -46,6 +47,7 @@ public class SecurityConfig {
                 // PRODUCT ENDPOINTS
                 .requestMatchers(HttpMethod.POST, "/products").hasRole("SELLER")
                 .requestMatchers(HttpMethod.PUT, "/products").hasRole("SELLER")
+                .requestMatchers(HttpMethod.DELETE, "/products/de-activate").hasRole("SELLER")
                 .anyRequest().authenticated());
 
         // transfering exception control to JWTAuthenticationEntryPoint
