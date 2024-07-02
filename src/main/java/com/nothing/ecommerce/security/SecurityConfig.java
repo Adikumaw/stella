@@ -48,6 +48,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/products").hasRole("SELLER")
                 .requestMatchers(HttpMethod.PUT, "/products").hasRole("SELLER")
                 .requestMatchers(HttpMethod.DELETE, "/products/de-activate").hasRole("SELLER")
+                .requestMatchers(HttpMethod.POST, "/products/activate").hasRole("SELLER")
                 .anyRequest().authenticated());
 
         // transfering exception control to JWTAuthenticationEntryPoint
