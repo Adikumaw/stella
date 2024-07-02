@@ -21,4 +21,6 @@ public interface ProductService {
 
     ProductViewModel deactivate(String reference, int productId);
 
+    ProductViewModel activate(String reference, int productId);
+
 }

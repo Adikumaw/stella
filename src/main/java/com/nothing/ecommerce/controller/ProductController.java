@@ -46,7 +46,7 @@ public class ProductController {
             @RequestParam("price") double price,
             @RequestParam("stock") int stock,
             @RequestParam("category") String category,
-            @RequestParam("active") boolean active) {
+            @RequestParam("active") Boolean active) {
 
         if (jwtService.verifyJwtHeader(jwtHeader)) {
 
@@ -185,6 +185,29 @@ public class ProductController {
                 String reference = jwtService.fetchReference(jwtToken);
 
                 return productService.deactivate(reference, id);
+            } catch (ProductException e) {
+                throw e;
+            } catch (UserException e) {
+                throw e;
+            } catch (Exception e) {
+                logger.error("Unknown error: " + e.getMessage(), e);
+                throw new UnknownErrorException("Error: unknown error");
+            }
+        } else {
+            throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
+        }
+    }
+
+    @PostMapping("/activate")
+    public ProductViewModel activate(@RequestHeader("Authorization") String jwtHeader,
+            @RequestParam("id") int id) {
+        if (jwtService.verifyJwtHeader(jwtHeader)) {
+
+            String jwtToken = jwtHeader.substring(7);
+            try {
+                String reference = jwtService.fetchReference(jwtToken);
+
+                return productService.activate(reference, id);
             } catch (ProductException e) {
                 throw e;
             } catch (UserException e) {

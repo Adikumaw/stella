@@ -214,6 +214,24 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
+    @Override
+    public ProductViewModel activate(String reference, int productId) {
+        int userId = userService.findUserIdByReference(reference);
+        Optional<Product> optionalProduct = productRepository.findById(productId);
+
+        if (optionalProduct.isPresent()) {
+            Product product = optionalProduct.get();
+            if (product.getUserId() != userId) {
+                throw new UnAuthorizedUserException("Access denied: you are not allowed to access this product");
+            }
+            product.setActive(true);
+            product = productRepository.save(product);
+            return convertToProductViewModel(product);
+        } else {
+            throw new InvalidProductIdException("Error: Product with id " + productId + " does not exist");
+        }
+    }
+
     // ----------------------------------------------------------------
     // HELPER FUNCTIONS FOR PRODUCTS
     // ----------------------------------------------------------------
