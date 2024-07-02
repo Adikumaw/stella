@@ -34,6 +34,8 @@ public class ProductServiceImpl implements ProductService {
     private ProductCategoryRepository categoryRepository;
     @Autowired
     private ImageService imageService;
+    @Autowired
+    private SellerService sellerService;
     private final static String path = "/home/all_father/Documents/workshop/java/ecommerce/src/main/resources/static/products";
 
     @Override
@@ -85,6 +87,22 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public List<ProductViewModel> getProductsByReference(String reference) {
         int userId = userService.findUserIdByReference(reference);
+
+        List<Product> products = productRepository.findByUserId(userId);
+        if (products != null) {
+            List<ProductViewModel> productsViewModels = new ArrayList<ProductViewModel>();
+            for (Product product : products) {
+                productsViewModels.add(convertToProductViewModel(product));
+            }
+            return productsViewModels;
+        } else {
+            return null;
+        }
+    }
+
+    @Override
+    public List<ProductViewModel> getProductsByStoreName(String storeName) {
+        int userId = sellerService.findUserIdByStoreName(storeName);
 
         List<Product> products = productRepository.findByUserId(userId);
         if (products != null) {

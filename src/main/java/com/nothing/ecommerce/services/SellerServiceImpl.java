@@ -4,6 +4,7 @@ import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.aop.AopInvocationException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.InvalidDataAccessApiUsageException;
 import org.springframework.stereotype.Service;
@@ -191,6 +192,17 @@ public class SellerServiceImpl implements SellerService {
         }
         if (model.getAddress() == null || model.getAddress().isEmpty()) {
             throw new InvalidSellerAddressException("Error: Address must be specified");
+        }
+    }
+
+    @Override
+    public int findUserIdByStoreName(String storeName) {
+        try {
+            int userId = sellerRepository.findUserIdByStoreName(storeName);
+
+            return userId;
+        } catch (AopInvocationException e) {
+            throw new InvalidStoreNameException("Error: store name " + storeName + " not found");
         }
     }
 }

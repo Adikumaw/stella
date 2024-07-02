@@ -198,8 +198,11 @@ public class AddressServiceImpl implements AddressService {
 
         List<Address> addresses = getAddresses(userId);
 
+        Boolean isDeleted = false;
+
         for (Address address : addresses) {
             if (address.equals(addressModel)) {
+                isDeleted = true;
                 delete(address);
                 // change main address
                 if (address.isMain()) {
@@ -212,8 +215,11 @@ public class AddressServiceImpl implements AddressService {
                 }
             }
         }
-
-        return getAddressModels(userId);
+        if (isDeleted) {
+            return getAddressModels(userId);
+        } else {
+            throw new InvalidAddressException("Error: Address not found");
+        }
     }
 
     @Override

@@ -18,4 +18,6 @@ public interface SellerService {
     SellerViewModel updateAddress(String reference, String address);
 
     SellerViewModel addLogo(String reference, MultipartFile logoFile);
+
+    int findUserIdByStoreName(String storeName);
 }

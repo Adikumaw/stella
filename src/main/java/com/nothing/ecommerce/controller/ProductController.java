@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import com.nothing.ecommerce.exception.ImageException;
 import com.nothing.ecommerce.exception.InvalidJWTHeaderException;
+import com.nothing.ecommerce.exception.InvalidStoreNameException;
 import com.nothing.ecommerce.exception.ProductException;
 import com.nothing.ecommerce.exception.UnknownErrorException;
 import com.nothing.ecommerce.exception.UserException;
@@ -96,6 +97,25 @@ public class ProductController {
             }
         } else {
             throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
+        }
+    }
+
+    @GetMapping("/store")
+    public List<ProductViewModel> getProductsByStoreName(@RequestParam("store") String storeName) {
+        // extract token from request header
+        try {
+
+            return productService.getProductsByStoreName(storeName);
+
+        } catch (ProductException e) {
+            throw e;
+        } catch (UserException e) {
+            throw e;
+        } catch (InvalidStoreNameException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.error("Unknown error: " + e.getMessage(), e);
+            throw new UnknownErrorException("Error: unknown error");
         }
     }
 

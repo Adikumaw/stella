@@ -13,9 +13,12 @@ public interface ProductService {
 
     List<ProductViewModel> getProductsByReference(String reference);
 
+    List<ProductViewModel> getProductsByStoreName(String storeName);
+
     ProductViewModel save(String reference, ProductInputModel product, List<MultipartFile> images);
 
     ProductViewModel update(String reference, ProductUpdateModel model, List<MultipartFile> images);
 
     ProductViewModel deactivate(String reference, int productId);
+
 }
