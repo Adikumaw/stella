@@ -96,7 +96,7 @@ public class SellerServiceImpl implements SellerService {
             String data = updateVerificationTokenService.fetchData(dataWithPrefix);
             Seller seller = sellerRepository.findById(userId).get();
             // check if data is number or email
-            if (prefix == "storename") {
+            if (prefix.equals("storename")) {
                 seller.setStoreName(data);
             }
             // Save updated value to seller

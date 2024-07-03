@@ -42,7 +42,7 @@ public class UpdateVerificationTokenServiceImpl implements UpdateVerificationTok
         String verificationTemplate = EmailTemplate.EMAIL_UPDATE_VERIFICATION_TEMPLATE;
         String formatedMessage = String.format(verificationTemplate,
                 user.getName(), applicationName,
-                updateVerificationToken.getData(),
+                fetchData(updateVerificationToken.getData()),
                 verificationLink + token, verificationLink + token, EXPIRATION,
                 applicationName,
                 applicationName);
@@ -70,7 +70,7 @@ public class UpdateVerificationTokenServiceImpl implements UpdateVerificationTok
         String formatedMessage;
         formatedMessage = String.format(verificationTemplate,
                 user.getName(), applicationName,
-                updateVerificationToken.getData(),
+                fetchData(updateVerificationToken.getData()),
                 verificationLink + token, verificationLink + token, EXPIRATION,
                 applicationName,
                 applicationName);
