@@ -23,4 +23,6 @@ public interface ProductService {
 
     ProductViewModel activate(String reference, int productId);
 
+    int findIdByCategory(String category);
+
 }

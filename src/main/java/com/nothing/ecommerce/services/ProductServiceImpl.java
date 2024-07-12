@@ -15,6 +15,7 @@ import com.nothing.ecommerce.exception.ImageException;
 import com.nothing.ecommerce.exception.InvalidProductCategoryException;
 import com.nothing.ecommerce.exception.InvalidProductException;
 import com.nothing.ecommerce.exception.InvalidProductIdException;
+import com.nothing.ecommerce.exception.InvalidStoreNameException;
 import com.nothing.ecommerce.exception.UnAuthorizedUserException;
 import com.nothing.ecommerce.exception.UsedProductNameException;
 import com.nothing.ecommerce.model.ProductInputModel;
@@ -104,6 +105,10 @@ public class ProductServiceImpl implements ProductService {
     public List<ProductViewModel> getProductsByStoreName(String storeName) {
         int userId = sellerService.findUserIdByStoreName(storeName);
 
+        if (userId == 0) {
+            throw new InvalidStoreNameException("Error: store name " + storeName + " not found");
+        }
+
         List<Product> products = productRepository.findByUserId(userId);
         if (products != null) {
             List<ProductViewModel> productsViewModels = new ArrayList<ProductViewModel>();
@@ -142,7 +147,10 @@ public class ProductServiceImpl implements ProductService {
             }
             if (!model.getCategory().isEmpty()) {
                 isUpdateAvailable = true;
-                int categoryId = categoryRepository.findIdByCategory(model.getCategory());
+                int categoryId = findIdByCategory(model.getCategory());
+                if (categoryId == 0) {
+                    throw new InvalidProductCategoryException("Error: Invalid product category");
+                }
                 product.setCategoryId(categoryId);
             }
             if (model.isActive() != product.isActive()) {
@@ -258,7 +266,7 @@ public class ProductServiceImpl implements ProductService {
         for (int i = imageUrlsSize; i < 9; i++) {
             imageUrls.add(null);
         }
-        int categoryId = categoryRepository.findIdByCategory(model.getCategory());
+        int categoryId = findIdByCategory(model.getCategory());
         if (categoryId == 0) {
             throw new InvalidProductCategoryException("Error: Invalid product category");
         }
@@ -315,4 +323,10 @@ public class ProductServiceImpl implements ProductService {
             throw new InvalidProductCategoryException("Error: Invalid product category");
         }
     }
+
+    @Override
+    public int findIdByCategory(String category) {
+        return categoryRepository.findIdByCategory(category).orElse(0);
+    }
+
 }

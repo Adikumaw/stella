@@ -197,12 +197,6 @@ public class SellerServiceImpl implements SellerService {
 
     @Override
     public int findUserIdByStoreName(String storeName) {
-        try {
-            int userId = sellerRepository.findUserIdByStoreName(storeName);
-
-            return userId;
-        } catch (AopInvocationException e) {
-            throw new InvalidStoreNameException("Error: store name " + storeName + " not found");
-        }
+        return sellerRepository.findUserIdByStoreName(storeName).orElse(0);
     }
 }

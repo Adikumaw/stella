@@ -56,7 +56,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public int findUserIdByEmail(String email) {
-        return userRepository.findUserIdByEmail(email);
+        return userRepository.findUserIdByEmail(email).orElse(0);
     }
 
     @Override
@@ -66,7 +66,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public int findUserIdByNumber(String number) {
-        return userRepository.findUserIdByNumber(number);
+        return userRepository.findUserIdByNumber(number).orElse(0);
     }
 
     @Override
