@@ -25,4 +25,6 @@ public interface ProductService {
 
     int findIdByCategory(String category);
 
+    Double findPriceById(int productId);
+
 }

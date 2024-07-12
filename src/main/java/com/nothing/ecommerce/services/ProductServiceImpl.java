@@ -329,4 +329,9 @@ public class ProductServiceImpl implements ProductService {
         return categoryRepository.findIdByCategory(category).orElse(0);
     }
 
+    @Override
+    public Double findPriceById(int id) {
+        return productRepository.findPriceById(id).orElse(0.0);
+    }
+
 }
