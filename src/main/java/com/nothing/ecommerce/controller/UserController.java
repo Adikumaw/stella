@@ -251,9 +251,16 @@ public class UserController {
     // }
     // }
 
-    @GetMapping("/hello")
-    public String hello_world() {
-        return "hello world!";
+    @GetMapping("/test")
+    public int test(@RequestBody String ref) {
+        try {
+            return userService.findUserIdByReference(ref);
+        } catch (UserException e) {
+            throw e;
+        } catch (Exception e) {
+            logger.error("Unknown error: " + e.getMessage(), e);
+            throw new UnknownErrorException("Error: unknown error");
+        }
     }
 
 }
