@@ -9,8 +9,9 @@ import lombok.NoArgsConstructor;
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
-public class AddressModel {
+public class AddressViewModel {
 
+    private int id;
     private String streetAddress;
     private String city;
     private String state;
@@ -18,7 +19,8 @@ public class AddressModel {
     private String country;
     private int main;
 
-    public AddressModel(Address address) {
+    public AddressViewModel(Address address) {
+        this.id = address.getId();
         this.streetAddress = address.getStreetAddress();
         this.city = address.getCity();
         this.state = address.getState();

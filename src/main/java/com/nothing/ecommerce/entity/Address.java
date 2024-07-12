@@ -1,6 +1,6 @@
 package com.nothing.ecommerce.entity;
 
-import com.nothing.ecommerce.model.AddressModel;
+import com.nothing.ecommerce.model.AddressSaveModel;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
@@ -43,22 +43,14 @@ public class Address {
     @Column(name = "main")
     private int main;
 
-    public Address(int userId, AddressModel addressModel) {
+    public Address(int userId, AddressSaveModel addressSaveModel) {
         this.userId = userId;
-        this.streetAddress = addressModel.getStreetAddress();
-        this.city = addressModel.getCity();
-        this.state = addressModel.getState();
-        this.postalCode = addressModel.getPostalCode();
-        this.country = addressModel.getCountry();
-        this.main = addressModel.getMain();
-    }
-
-    public Boolean equals(AddressModel addressModel) {
-        return this.streetAddress.equals(addressModel.getStreetAddress())
-                && this.city.equals(addressModel.getCity())
-                && this.state.equals(addressModel.getState())
-                && this.postalCode.equals(addressModel.getPostalCode())
-                && this.country.equals(addressModel.getCountry());
+        this.streetAddress = addressSaveModel.getStreetAddress();
+        this.city = addressSaveModel.getCity();
+        this.state = addressSaveModel.getState();
+        this.postalCode = addressSaveModel.getPostalCode();
+        this.country = addressSaveModel.getCountry();
+        this.main = addressSaveModel.getMain();
     }
 
     public Boolean isMain() {

@@ -3,32 +3,33 @@ package com.nothing.ecommerce.services;
 import java.util.List;
 
 import com.nothing.ecommerce.entity.Address;
-import com.nothing.ecommerce.model.AddressModel;
+import com.nothing.ecommerce.model.AddressViewModel;
+import com.nothing.ecommerce.model.AddressSaveModel;
 
 public interface AddressService {
     // ----------------------------------------------------------------
     // RestApi methods for User Address
     // ----------------------------------------------------------------
 
-    List<AddressModel> save(int userId, AddressModel addressModel);
+    List<AddressViewModel> save(int userId, AddressSaveModel saveAddressModel);
 
-    List<AddressModel> save(String reference, AddressModel addressModel);
+    List<AddressViewModel> save(String reference, AddressSaveModel saveAddressModel);
 
     List<Address> getAddresses(int userId);
 
     List<Address> getAddresses(String reference);
 
-    List<AddressModel> getAddressModels(int userId);
+    List<AddressViewModel> getAddressModels(int userId);
 
-    List<AddressModel> getAddressModels(String reference);
+    List<AddressViewModel> getAddressModels(String reference);
 
-    List<AddressModel> update(String reference, AddressModel oldAddress, AddressModel newAddress);
+    List<AddressViewModel> update(String reference, AddressViewModel updateRequest);
 
-    List<AddressModel> update(int userId, AddressModel oldAddress, AddressModel newAddress);
+    List<AddressViewModel> update(int userId, AddressViewModel updateRequest);
 
-    List<AddressModel> delete(String reference, AddressModel addressModel);
+    List<AddressViewModel> delete(String reference, int addressId);
 
-    List<AddressModel> delete(int userId, AddressModel addressModel);
+    List<AddressViewModel> delete(int userId, int addressId);
 
     // ----------------------------------------------------------------
     // service methods for User Address
@@ -37,7 +38,7 @@ public interface AddressService {
 
     Address save(Address address);
 
-    List<AddressModel> convertToAddressModels(List<Address> addresses);
+    List<AddressViewModel> convertToAddressModels(List<Address> addresses);
 
-    Boolean verify(AddressModel addressModel);
+    Boolean verify(AddressSaveModel addressModel);
 }

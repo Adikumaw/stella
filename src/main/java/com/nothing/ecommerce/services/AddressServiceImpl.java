@@ -2,13 +2,16 @@ package com.nothing.ecommerce.services;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import com.nothing.ecommerce.entity.Address;
+import com.nothing.ecommerce.exception.AddressNotFoundException;
 import com.nothing.ecommerce.exception.InvalidAddressException;
-import com.nothing.ecommerce.exception.InvalidOldAddressException;
-import com.nothing.ecommerce.model.AddressModel;
+import com.nothing.ecommerce.exception.UnAuthorizedUserException;
+import com.nothing.ecommerce.model.AddressViewModel;
+import com.nothing.ecommerce.model.AddressSaveModel;
 import com.nothing.ecommerce.repository.AddressRepository;
 
 @Service
@@ -24,8 +27,8 @@ public class AddressServiceImpl implements AddressService {
     // ----------------------------------------------------------------
 
     @Override
-    public List<AddressModel> save(String reference, AddressModel addressModel) {
-        if (!verify(addressModel)) {
+    public List<AddressViewModel> save(String reference, AddressSaveModel addressSaveModel) {
+        if (!verify(addressSaveModel)) {
             throw new InvalidAddressException("Error: Address is not valid");
         }
         // fetch userId
@@ -34,7 +37,7 @@ public class AddressServiceImpl implements AddressService {
         List<Address> addresses = getAddresses(userId);
 
         // removing main from other addresses
-        if (addressModel.isMain()) {
+        if (addressSaveModel.isMain()) {
             for (Address a : addresses) {
                 if (a.isMain()) {
                     a.setMain(0);
@@ -43,21 +46,21 @@ public class AddressServiceImpl implements AddressService {
             }
         }
 
-        Address address = new Address(userId, addressModel);
+        Address address = new Address(userId, addressSaveModel);
         addressRepository.save(address);
 
         return getAddressModels(userId);
     }
 
     @Override
-    public List<AddressModel> save(int userId, AddressModel addressModel) {
-        if (!verify(addressModel)) {
+    public List<AddressViewModel> save(int userId, AddressSaveModel addressSaveModel) {
+        if (!verify(addressSaveModel)) {
             throw new InvalidAddressException("Error: Address is not valid");
         }
         List<Address> addresses = getAddresses(userId);
 
         // removing main from other addresses
-        if (addressModel.isMain()) {
+        if (addressSaveModel.isMain()) {
             for (Address a : addresses) {
                 if (a.isMain()) {
                     a.setMain(0);
@@ -66,17 +69,17 @@ public class AddressServiceImpl implements AddressService {
             }
         }
 
-        Address address = new Address(userId, addressModel);
+        Address address = new Address(userId, addressSaveModel);
         addressRepository.save(address);
 
         return getAddressModels(userId);
     }
 
     @Override
-    public List<AddressModel> convertToAddressModels(List<Address> addresses) {
-        List<AddressModel> addressModels = new ArrayList<AddressModel>();
+    public List<AddressViewModel> convertToAddressModels(List<Address> addresses) {
+        List<AddressViewModel> addressModels = new ArrayList<AddressViewModel>();
         for (Address address : addresses) {
-            addressModels.add(new AddressModel(address));
+            addressModels.add(new AddressViewModel(address));
         }
         return addressModels;
     }
@@ -101,147 +104,159 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
-    public List<AddressModel> getAddressModels(int userId) {
+    public List<AddressViewModel> getAddressModels(int userId) {
         return convertToAddressModels(getAddresses(userId));
     }
 
     @Override
-    public List<AddressModel> getAddressModels(String reference) {
+    public List<AddressViewModel> getAddressModels(String reference) {
         return convertToAddressModels(getAddresses(reference));
     }
 
     @Override
-    public List<AddressModel> update(int userId, AddressModel oldAddress, AddressModel newAddress) {
-        List<Address> addresses = getAddresses(userId);
+    public List<AddressViewModel> update(int userId, AddressViewModel updateRequest) {
+        int id = updateRequest.getId();
+        Optional<Address> optionalAddress = addressRepository.findById(id);
 
-        for (Address address : addresses) {
-            if (address.equals(oldAddress)) {
-                if (!newAddress.getStreetAddress().isEmpty()) {
-                    address.setStreetAddress(newAddress.getStreetAddress());
-                }
-                if (!newAddress.getCity().isEmpty()) {
-                    address.setCity(newAddress.getCity());
-                }
-                if (!newAddress.getState().isEmpty()) {
-                    address.setState(newAddress.getState());
-                }
-                if (!newAddress.getPostalCode().isEmpty()) {
-                    address.setPostalCode(newAddress.getPostalCode());
-                }
-                if (!newAddress.getCountry().isEmpty()) {
-                    address.setCountry(newAddress.getCountry());
-                }
-                if (newAddress.isMain()) {
-                    for (Address a : addresses) {
-                        if (a.isMain()) {
-                            a.setMain(0);
-                            save(a);
-                        }
-                    }
-                    address.setMain(1);
-                }
-                save(address);
-                break;
-            }
+        // verify address exists and fetch Address
+        if (!optionalAddress.isPresent()) {
+            throw new AddressNotFoundException("Error: invalid address id " + id);
         }
+        Address address = optionalAddress.get();
+
+        // verify user is allowed to access the address
+        if (address.getUserId() != userId) {
+            throw new UnAuthorizedUserException("Error: access denied. you are not allowed to access this address");
+        }
+        // verify updates
+        if (!updateRequest.getStreetAddress().isEmpty()) {
+            address.setStreetAddress(updateRequest.getStreetAddress());
+        }
+        if (!updateRequest.getCity().isEmpty()) {
+            address.setCity(updateRequest.getCity());
+        }
+        if (!updateRequest.getState().isEmpty()) {
+            address.setState(updateRequest.getState());
+        }
+        if (!updateRequest.getPostalCode().isEmpty()) {
+            address.setPostalCode(updateRequest.getPostalCode());
+        }
+        if (!updateRequest.getCountry().isEmpty()) {
+            address.setCountry(updateRequest.getCountry());
+        }
+        if (updateRequest.isMain()) {
+            List<Address> addresses = getAddresses(userId);
+            for (Address a : addresses) {
+                if (a.isMain()) {
+                    a.setMain(0);
+                    save(a);
+                }
+            }
+            address.setMain(1);
+        }
+        // save updated address
+        save(address);
         return getAddressModels(userId);
     };
 
     @Override
-    public List<AddressModel> update(String reference, AddressModel oldAddress, AddressModel newAddress) {
+    public List<AddressViewModel> update(String reference, AddressViewModel updateRequest) {
         int userId = userService.findUserIdByReference(reference);
-        Boolean addressFound = false;
 
-        List<Address> addresses = getAddresses(userId);
+        int id = updateRequest.getId();
+        Optional<Address> optionalAddress = addressRepository.findById(id);
+        // verify address exists and fetch Address
+        if (!optionalAddress.isPresent()) {
+            throw new AddressNotFoundException("Error: invalid address id " + id);
+        }
+        Address address = optionalAddress.get();
+        // verify user is allowed to access the address
+        if (address.getUserId() != userId) {
+            throw new UnAuthorizedUserException("Error: access denied. you are not allowed to access this address");
+        }
 
-        for (Address address : addresses) {
-            if (address.equals(oldAddress)) {
-                addressFound = true;
-                if (!newAddress.getStreetAddress().isEmpty()) {
-                    address.setStreetAddress(newAddress.getStreetAddress());
+        // verify updates
+        if (!updateRequest.getStreetAddress().isEmpty()) {
+            address.setStreetAddress(updateRequest.getStreetAddress());
+        }
+        if (!updateRequest.getCity().isEmpty()) {
+            address.setCity(updateRequest.getCity());
+        }
+        if (!updateRequest.getState().isEmpty()) {
+            address.setState(updateRequest.getState());
+        }
+        if (!updateRequest.getPostalCode().isEmpty()) {
+            address.setPostalCode(updateRequest.getPostalCode());
+        }
+        if (!updateRequest.getCountry().isEmpty()) {
+            address.setCountry(updateRequest.getCountry());
+        }
+        if (updateRequest.isMain()) {
+            List<Address> addresses = getAddresses(userId);
+            for (Address a : addresses) {
+                if (a.isMain()) {
+                    a.setMain(0);
+                    save(a);
                 }
-                if (!newAddress.getCity().isEmpty()) {
-                    address.setCity(newAddress.getCity());
-                }
-                if (!newAddress.getState().isEmpty()) {
-                    address.setState(newAddress.getState());
-                }
-                if (!newAddress.getPostalCode().isEmpty()) {
-                    address.setPostalCode(newAddress.getPostalCode());
-                }
-                if (!newAddress.getCountry().isEmpty()) {
-                    address.setCountry(newAddress.getCountry());
-                }
-                if (newAddress.isMain() && !oldAddress.isMain()) {
-                    for (Address a : addresses) {
-                        if (a.isMain()) {
-                            a.setMain(0);
-                            save(a);
-                        }
-                    }
-                    address.setMain(1);
-                }
-                save(address);
-                break;
             }
+            address.setMain(1);
         }
-        if (addressFound) {
-            return getAddressModels(userId);
-        } else {
-            throw new InvalidOldAddressException("Error: Old Address was not found");
-        }
+        // save updated address
+        save(address);
+        return getAddressModels(userId);
     }
 
     @Override
-    public List<AddressModel> delete(String reference, AddressModel addressModel) {
+    public List<AddressViewModel> delete(String reference, int addressId) {
         int userId = userService.findUserIdByReference(reference);
 
-        List<Address> addresses = getAddresses(userId);
+        Optional<Address> optionalAddress = addressRepository.findById(addressId);
+        // verify address exists and fetch Address
+        if (!optionalAddress.isPresent()) {
+            throw new AddressNotFoundException("Error: invalid address id " + addressId);
+        }
+        Address address = optionalAddress.get();
+        // verify user is allowed to access the address
+        if (address.getUserId() != userId) {
+            throw new UnAuthorizedUserException("Error: access denied. you are not allowed to access this address");
+        }
 
-        Boolean isDeleted = false;
-
-        for (Address address : addresses) {
-            if (address.equals(addressModel)) {
-                isDeleted = true;
-                delete(address);
-                // change main address
-                if (address.isMain()) {
-                    List<Address> addresses_2 = getAddresses(userId);
-                    if (addresses_2.size() > 0) {
-                        Address addr = addresses_2.get(0);
-                        addr.setMain(1);
-                        save(addr);
-                    }
-                }
+        delete(address);
+        // change main address
+        if (address.isMain()) {
+            List<Address> addresses = getAddresses(userId);
+            if (addresses.size() > 0) {
+                Address addr = addresses.get(0);
+                addr.setMain(1);
+                save(addr);
             }
         }
-        if (isDeleted) {
-            return getAddressModels(userId);
-        } else {
-            throw new InvalidAddressException("Error: Address not found");
-        }
+        return getAddressModels(userId);
     }
 
     @Override
-    public List<AddressModel> delete(int userId, AddressModel addressModel) {
-
-        List<Address> addresses = getAddresses(userId);
-
-        for (Address address : addresses) {
-            if (address.equals(addressModel)) {
-                delete(address);
-                // change main address
-                if (address.isMain()) {
-                    List<Address> addresses_2 = getAddresses(userId);
-                    if (addresses_2.size() > 0) {
-                        Address addr = addresses_2.get(0);
-                        addr.setMain(1);
-                        save(addr);
-                    }
-                }
-            }
+    public List<AddressViewModel> delete(int userId, int addressId) {
+        Optional<Address> optionalAddress = addressRepository.findById(addressId);
+        // verify address exists and fetch Address
+        if (!optionalAddress.isPresent()) {
+            throw new AddressNotFoundException("Error: invalid address id " + addressId);
+        }
+        Address address = optionalAddress.get();
+        // verify user is allowed to access the address
+        if (address.getUserId() != userId) {
+            throw new UnAuthorizedUserException("Error: access denied. you are not allowed to access this address");
         }
 
+        delete(address);
+        // change main address
+        if (address.isMain()) {
+            List<Address> addresses = getAddresses(userId);
+            if (addresses.size() > 0) {
+                Address addr = addresses.get(0);
+                addr.setMain(1);
+                save(addr);
+            }
+        }
         return getAddressModels(userId);
     }
 
@@ -259,7 +274,7 @@ public class AddressServiceImpl implements AddressService {
     }
 
     @Override
-    public Boolean verify(AddressModel addressModel) {
+    public Boolean verify(AddressSaveModel addressModel) {
         if (addressModel.getStreetAddress() == null || addressModel.getStreetAddress().isEmpty()) {
             return false;
         } else if (addressModel.getCity() == null || addressModel.getCity().isEmpty()) {
