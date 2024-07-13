@@ -1,5 +1,7 @@
 package com.nothing.ecommerce.entity;
 
+import java.util.Date;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -17,7 +19,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @Entity
 @Table(name = "orders")
-public class Orders {
+public class Order {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_id")
@@ -25,7 +27,7 @@ public class Orders {
     @Column(name = "user_id")
     private int userId;
     @Column(name = "order_date")
-    private String orderDate;
+    private Date orderDate;
     @Column(name = "total_amount")
     private double totalAmount;
     // allowed values
@@ -35,10 +37,11 @@ public class Orders {
     @Column(name = "shipping_address")
     private String shippingAddress;
     @Column(name = "razorpay_id")
-    private int razorpayId;
+    private String razorpayId;
 
-    public Orders(int userId, double totalAmount, String status, String shippingAddress, int razorpayId) {
+    public Order(int userId, double totalAmount, String status, String shippingAddress, String razorpayId) {
         this.userId = userId;
+        this.orderDate = new Date(); // Set current date and time
         this.totalAmount = totalAmount;
         this.status = status;
         this.shippingAddress = shippingAddress;

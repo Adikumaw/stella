@@ -17,7 +17,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @Entity
 @Table(name = "order_items")
-public class OrderItems {
+public class OrderItem {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "order_item_id")
@@ -33,7 +33,7 @@ public class OrderItems {
     @Column(name = "total_amount")
     private double totalPrice;
 
-    public OrderItems(int orderId, int productId, int quantity, double price) {
+    public OrderItem(int orderId, int productId, int quantity, double price) {
         this.orderId = orderId;
         this.productId = productId;
         this.quantity = quantity;

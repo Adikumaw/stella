@@ -334,4 +334,14 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findPriceById(id).orElse(0.0);
     }
 
+    @Override
+    public Product findById(int id) {
+        return productRepository.findById(id).orElse(null);
+    }
+
+    @Override
+    public Boolean existsById(int id) {
+        return productRepository.existsById(id);
+    }
+
 }
