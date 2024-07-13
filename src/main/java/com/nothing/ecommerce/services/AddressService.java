@@ -34,6 +34,8 @@ public interface AddressService {
     // ----------------------------------------------------------------
     // service methods for User Address
     // ----------------------------------------------------------------
+    Address findById(int id);
+
     void delete(Address address);
 
     Address save(Address address);

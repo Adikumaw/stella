@@ -263,6 +263,12 @@ public class AddressServiceImpl implements AddressService {
     // ----------------------------------------------------------------
     // service methods for User Address
     // ----------------------------------------------------------------
+
+    @Override
+    public Address findById(int id) {
+        return addressRepository.findById(id).orElse(null);
+    }
+
     @Override
     public Address save(Address address) {
         return addressRepository.save(address);

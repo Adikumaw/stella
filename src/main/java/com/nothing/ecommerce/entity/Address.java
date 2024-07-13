@@ -7,12 +7,10 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import lombok.ToString;
 
 @Entity
 @Getter
 @Setter
-@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 @Table(name = "address")
@@ -51,6 +49,10 @@ public class Address {
         this.postalCode = addressSaveModel.getPostalCode();
         this.country = addressSaveModel.getCountry();
         this.main = addressSaveModel.getMain();
+    }
+
+    public String toString() {
+        return streetAddress + ", " + city + ", " + state + " " + postalCode + ", " + country;
     }
 
     public Boolean isMain() {

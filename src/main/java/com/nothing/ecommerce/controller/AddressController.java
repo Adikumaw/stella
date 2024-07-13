@@ -104,7 +104,7 @@ public class AddressController {
     }
 
     @DeleteMapping
-    public List<AddressViewModel> delete(@RequestParam int addressId,
+    public List<AddressViewModel> delete(@RequestParam int id,
             @RequestHeader("Authorization") String jwtHeader) {
         if (jwtService.verifyJwtHeader(jwtHeader)) {
             String reference = null;
@@ -114,7 +114,7 @@ public class AddressController {
             try {
                 reference = jwtService.fetchReference(jwtToken);
 
-                return addressService.delete(reference, addressId);
+                return addressService.delete(reference, id);
             } catch (UserException e) {
                 throw e;
             } catch (Exception e) {
