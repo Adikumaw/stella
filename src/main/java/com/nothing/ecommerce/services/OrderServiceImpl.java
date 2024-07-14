@@ -1,6 +1,7 @@
 package com.nothing.ecommerce.services;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import com.nothing.ecommerce.entity.Address;
 import com.nothing.ecommerce.entity.Order;
 import com.nothing.ecommerce.entity.OrderItem;
+import com.nothing.ecommerce.entity.Product;
 import com.nothing.ecommerce.exception.AddressNotFoundException;
 import com.nothing.ecommerce.exception.InvalidProductIdException;
 import com.nothing.ecommerce.exception.OrderNotFoundException;
@@ -19,12 +21,16 @@ import com.nothing.ecommerce.exception.UnAuthorizedPaymentCallbackException;
 import com.nothing.ecommerce.exception.UnAuthorizedUserException;
 import com.nothing.ecommerce.exception.UnknownErrorException;
 import com.nothing.ecommerce.model.OrderRequest;
+import com.nothing.ecommerce.model.OrderViewModel;
 import com.nothing.ecommerce.model.PaymentCallbackRequest;
 import com.nothing.ecommerce.model.OrderPaymentRequest;
 import com.nothing.ecommerce.model.ProductOrderRequest;
+import com.nothing.ecommerce.model.ProductOrderResponse;
 import com.nothing.ecommerce.repository.OrderItemRepository;
 import com.nothing.ecommerce.repository.OrderRepository;
-import com.razorpay.*;
+import com.razorpay.RazorpayClient;
+import com.razorpay.RazorpayException;
+import com.razorpay.Utils;
 
 @Service
 public class OrderServiceImpl implements OrderService {
@@ -41,6 +47,7 @@ public class OrderServiceImpl implements OrderService {
     private AddressService addressService;
 
     private RazorpayClient razorpayClient;
+    private static final long EXPIRATION_TIME_LIMIT = 30 * 60 * 1000; // 30 minutes
 
     @Value("${razorpay.key.id}")
     private String razorpayKey;
@@ -159,4 +166,38 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    @Override
+    public List<OrderViewModel> fetchOrders(String reference) {
+        int userId = userService.findUserIdByReference(reference);
+
+        List<OrderViewModel> orderViewModels = new ArrayList<OrderViewModel>();
+        List<Order> orders = orderRepository.findByUserId(userId);
+        Date currentDate = new Date();
+
+        for (Order order : orders) {
+            // check if the order is not expired
+            Date orderExpiry = new Date(order.getOrderDate().getTime() + EXPIRATION_TIME_LIMIT);
+            List<OrderItem> orderItems = orderItemRepository.findByOrderId(order.getOrderId());
+
+            if (orderExpiry.after(currentDate) || order.getStatus() != "created") {
+                List<ProductOrderResponse> products = new ArrayList<ProductOrderResponse>();
+
+                for (OrderItem orderItem : orderItems) {
+                    Product product = productService.findById(orderItem.getProductId());
+                    products.add(new ProductOrderResponse(product, orderItem.getQuantity()));
+                }
+
+                orderViewModels.add(new OrderViewModel(order, products));
+            }
+            // delete expired order and order items
+            else {
+                for (OrderItem orderItem : orderItems) {
+                    orderItemRepository.delete(orderItem);
+                }
+                orderRepository.delete(order);
+            }
+        }
+
+        return orderViewModels;
+    }
 }
