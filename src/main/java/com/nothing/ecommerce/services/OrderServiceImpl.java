@@ -2,6 +2,7 @@ package com.nothing.ecommerce.services;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,10 +14,13 @@ import com.nothing.ecommerce.entity.Order;
 import com.nothing.ecommerce.entity.OrderItem;
 import com.nothing.ecommerce.exception.AddressNotFoundException;
 import com.nothing.ecommerce.exception.InvalidProductIdException;
+import com.nothing.ecommerce.exception.OrderNotFoundException;
+import com.nothing.ecommerce.exception.UnAuthorizedPaymentCallbackException;
 import com.nothing.ecommerce.exception.UnAuthorizedUserException;
 import com.nothing.ecommerce.exception.UnknownErrorException;
 import com.nothing.ecommerce.model.OrderRequest;
-import com.nothing.ecommerce.model.OrderResponse;
+import com.nothing.ecommerce.model.PaymentCallbackRequest;
+import com.nothing.ecommerce.model.OrderPaymentRequest;
 import com.nothing.ecommerce.model.ProductOrderRequest;
 import com.nothing.ecommerce.repository.OrderItemRepository;
 import com.nothing.ecommerce.repository.OrderRepository;
@@ -45,7 +49,7 @@ public class OrderServiceImpl implements OrderService {
     private String razorpaySecret;
 
     @Override
-    public OrderResponse create(String reference, OrderRequest orderRequest) {
+    public OrderPaymentRequest create(String reference, OrderRequest orderRequest) {
         int addressId = orderRequest.getAddressId();
         List<ProductOrderRequest> productsOrderRequest = orderRequest.getOrders();
 
@@ -103,13 +107,15 @@ public class OrderServiceImpl implements OrderService {
             // create razorpay Order
             com.razorpay.Order razorpayOrder = razorpayClient.orders.create(razorpayOrderRequest);
 
+            System.out.println(razorpayOrder);
+
             // fetch razorpay id, status and total price and set to product order
             order.setTotalAmount(totalPrice);
             order.setRazorpayId(razorpayOrder.get("id"));
             order.setStatus(razorpayOrder.get("status"));
             order = orderRepository.save(order); // update order to DataBase
 
-            return new OrderResponse(order); // return OrderResponse object
+            return new OrderPaymentRequest(order, razorpayKey); // return OrderResponse object
 
         } catch (Exception e) {
 
@@ -123,6 +129,33 @@ public class OrderServiceImpl implements OrderService {
                 throw new UnknownErrorException("Error: error creating Razorpay client");
             }
             throw new UnknownErrorException("Error: error creating Order");
+        }
+    }
+
+    @Override
+    public void handlePaymentCallback(PaymentCallbackRequest request) {
+        try {
+            JSONObject options = new JSONObject();
+            options.put("razorpay_order_id", request.getRazorpay_order_id());
+            options.put("razorpay_payment_id", request.getRazorpay_payment_id());
+            options.put("razorpay_signature", request.getRazorpay_signature());
+
+            boolean status = Utils.verifyPaymentSignature(options, razorpaySecret);
+
+            if (status) {
+                Optional<Order> optionalOrder = orderRepository.findByRazorpayId(request.getRazorpay_order_id());
+                if (optionalOrder.isPresent()) {
+                    Order order = optionalOrder.get();
+                    order.setStatus("approved");
+                    orderRepository.save(order); // update order status to paid in DataBase
+                } else {
+                    throw new OrderNotFoundException("Error: order not found");
+                }
+            } else {
+                throw new UnAuthorizedPaymentCallbackException("Error: unauthorized payment callback");
+            }
+        } catch (RazorpayException e) {
+            throw new UnknownErrorException("Error: error creating Razorpay client");
         }
     }
 

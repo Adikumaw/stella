@@ -3,6 +3,7 @@ package com.nothing.ecommerce.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -14,12 +15,14 @@ import com.nothing.ecommerce.exception.ProductException;
 import com.nothing.ecommerce.exception.UnknownErrorException;
 import com.nothing.ecommerce.exception.UserException;
 import com.nothing.ecommerce.model.OrderRequest;
-import com.nothing.ecommerce.model.OrderResponse;
+import com.nothing.ecommerce.model.PaymentCallbackRequest;
+import com.nothing.ecommerce.model.OrderPaymentRequest;
 import com.nothing.ecommerce.services.JWTService;
 import com.nothing.ecommerce.services.OrderService;
 
 @RestController
 @RequestMapping("/orders")
+@CrossOrigin(origins = "*")
 public class OrderController {
     @Autowired
     private OrderService orderService;
@@ -29,7 +32,7 @@ public class OrderController {
     private static final Logger logger = LoggerFactory.getLogger(OrderController.class);
 
     @PostMapping
-    public OrderResponse createOrder(@RequestBody OrderRequest orderRequest,
+    public OrderPaymentRequest createOrder(@RequestBody OrderRequest orderRequest,
             @RequestHeader("Authorization") String jwtHeader) {
         if (jwtService.verifyJwtHeader(jwtHeader)) {
 
@@ -50,5 +53,10 @@ public class OrderController {
         } else {
             throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
         }
+    }
+
+    @PostMapping("/payment-callback")
+    public void handlePaymentCallback(@RequestBody PaymentCallbackRequest request) {
+        orderService.handlePaymentCallback(request);
     }
 }

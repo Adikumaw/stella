@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderResponse {
+public class OrderPaymentRequest {
     private int orderId;
     private String orderDate;
     private double totalAmount;
@@ -17,13 +17,15 @@ public class OrderResponse {
     private String status;
     private String shippingAddress;
     private String razorpayId;
+    private String apiKey;
 
-    public OrderResponse(Order order) {
+    public OrderPaymentRequest(Order order, String apiKey) {
         this.orderId = order.getOrderId();
         this.orderDate = order.getOrderDate().toString();
         this.totalAmount = order.getTotalAmount();
         this.status = order.getStatus();
         this.shippingAddress = order.getShippingAddress();
         this.razorpayId = order.getRazorpayId();
+        this.apiKey = apiKey;
     }
 }

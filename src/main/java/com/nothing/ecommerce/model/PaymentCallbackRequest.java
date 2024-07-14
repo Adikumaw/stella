@@ -7,9 +7,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
-public class ProductShortViewModel {
-    private int id;
-    private String name;
-    private String description;
-    private double price;
+public class PaymentCallbackRequest {
+    String razorpay_payment_id;
+    String razorpay_order_id;
+    String razorpay_signature;
 }
