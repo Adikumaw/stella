@@ -17,8 +17,6 @@ import com.nothing.ecommerce.repository.UpdateVerificationTokenRepository;
 @Service
 public class UpdateVerificationTokenServiceImpl implements UpdateVerificationTokenService {
 
-    // TODO change link according to need
-    private String verificationLink = "http://localhost:8080/users/verify-update?token=";
     private String applicationName = "Ecommerce_web";
     private String emailSubject = "Verify Your updated Email Address for " + applicationName;
     private int EXPIRATION = 1;
@@ -33,7 +31,7 @@ public class UpdateVerificationTokenServiceImpl implements UpdateVerificationTok
     private static final Logger logger = LoggerFactory.getLogger(UpdateVerificationTokenServiceImpl.class);
 
     @Override
-    public void sender(String reference) {
+    public void sender(String reference, String verificationLink) {
         User user = userService.get(reference);
         UpdateVerificationToken updateVerificationToken = updateVerificationTokenRepository
                 .findByUserId(user.getUserId());
@@ -62,7 +60,7 @@ public class UpdateVerificationTokenServiceImpl implements UpdateVerificationTok
     }
 
     @Override
-    public void sender(User user, UpdateVerificationToken updateVerificationToken) {
+    public void sender(User user, UpdateVerificationToken updateVerificationToken, String verificationLink) {
         String data = updateVerificationToken.getData();
         data = fetchData(data);
         String email = null;

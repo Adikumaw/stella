@@ -41,7 +41,9 @@ public class SellerServiceImpl implements SellerService {
     private ImageService imageService;
     @Autowired
     private UpdateVerificationTokenService updateVerificationTokenService;
+
     private final static String path = "/home/all_father/Documents/workshop/java/ecommerce/src/main/resources/static/storeLogos";
+    private static final String verificationLink = "http://localhost:8080/sellers/verify-update?token=";
 
     private static final Logger logger = LoggerFactory.getLogger(SellerServiceImpl.class);
 
@@ -131,7 +133,7 @@ public class SellerServiceImpl implements SellerService {
                     "storename");
 
             // send verification email
-            updateVerificationTokenService.sender(reference);
+            updateVerificationTokenService.sender(reference, verificationLink);
         }
     }
 

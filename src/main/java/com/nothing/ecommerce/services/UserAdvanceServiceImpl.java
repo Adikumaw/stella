@@ -46,6 +46,8 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
     @Autowired
     private UpdateVerificationTokenService updateVerificationTokenService;
 
+    private static final String verificationLink = "http://localhost:8080/users/verify-update?token=";
+
     private static final Logger logger = LoggerFactory.getLogger(UserAdvanceServiceImpl.class);
 
     // ----------------------------------------------------------------
@@ -172,7 +174,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
                         "number");
 
                 // send verification email
-                updateVerificationTokenService.sender(user, updateVerificationToken);
+                updateVerificationTokenService.sender(user, updateVerificationToken, verificationLink);
             }
         }
     }
@@ -194,7 +196,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
                         number,
                         "number");
                 // send verification email
-                updateVerificationTokenService.sender(user, updateVerificationToken);
+                updateVerificationTokenService.sender(user, updateVerificationToken, verificationLink);
             }
         }
     }
@@ -216,7 +218,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
                         "email");
 
                 // send verification email
-                updateVerificationTokenService.sender(user, updateVerificationToken);
+                updateVerificationTokenService.sender(user, updateVerificationToken, verificationLink);
             }
         }
     }
@@ -239,7 +241,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
                         "email");
 
                 // send verification email
-                updateVerificationTokenService.sender(user, updateVerificationToken);
+                updateVerificationTokenService.sender(user, updateVerificationToken, verificationLink);
             }
         }
     }

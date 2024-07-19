@@ -12,9 +12,9 @@ public interface UpdateVerificationTokenService {
 
     void delete(UpdateVerificationToken token);
 
-    void sender(String reference);
+    void sender(String reference, String verificationLink);
 
-    void sender(User user, UpdateVerificationToken updateVerificationToken);
+    void sender(User user, UpdateVerificationToken updateVerificationToken, String verificationLink);
 
     boolean verify(String token);
 
