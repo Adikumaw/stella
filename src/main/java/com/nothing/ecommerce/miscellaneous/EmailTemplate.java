@@ -2,6 +2,15 @@ package com.nothing.ecommerce.miscellaneous;
 
 public class EmailTemplate {
 
+        // Input fields (
+        // user Name,
+        // application Name,
+        // verificationLink,
+        // verificationLink,
+        // EXPIRATION,
+        // application Name,
+        // application Name
+        // )
         public static final String EMAIL_VERIFICATION_TEMPLATE = """
                         Hi %s,
                         Thanks for signing up for %s!
@@ -27,6 +36,17 @@ public class EmailTemplate {
                         The %s Team\
                         """;
 
+        // input feilds (
+        // verificationTemplate,
+        // user.getName(),
+        // applicationName,
+        // Data which is updated,
+        // verificationLink,
+        // verificationLink,
+        // EXPIRATION,
+        // applicationName,
+        // applicationName
+        // )
         public static final String EMAIL_UPDATE_VERIFICATION_TEMPLATE = """
                         Hi %s,
                         You recently updated your details on %s. To ensure the accuracy of your information and the security of your account, please verify these changes.
@@ -49,5 +69,43 @@ public class EmailTemplate {
 
                         Thanks,
                         The %s Team\
+                        """;
+
+        // Format input feilds (
+        // order id,
+        // user name,
+        // company name,
+        // order date,
+        // total amount,
+        // order status,
+        // shipping address,
+        // product details list as pre formated string,
+        // order trackiing link,
+        // company name
+        // )
+        public static final String EMAIL_ORDER_TEMPLATE = """
+                        Subject: Order Confirmation - Order #%d,
+
+                        Dear %s,
+
+                        Thank you for your order! This email confirms your purchase with %s.
+                        Order Summary
+
+                            Order Date: %s
+                            Total Amount: %f
+                            Order Status: %s
+                            Shipping Address: %s
+
+                        Order Details
+                        $s
+
+                        You can track your order status at $s.
+
+                        If you have any questions or require assistance, please contact our customer support.
+
+                        Thank you for shopping with us!
+
+                        Sincerely,
+                        %s
                         """;
 }
