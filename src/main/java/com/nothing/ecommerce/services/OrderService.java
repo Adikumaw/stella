@@ -6,6 +6,7 @@ import com.nothing.ecommerce.model.PaymentCallbackRequest;
 
 import java.util.List;
 
+import com.nothing.ecommerce.entity.Order;
 import com.nothing.ecommerce.model.OrderPaymentRequest;
 
 public interface OrderService {
@@ -14,5 +15,13 @@ public interface OrderService {
     void handlePaymentCallback(PaymentCallbackRequest request);
 
     List<OrderViewModel> fetchOrders(String reference);
+
+    String fetchOrderStatus(int orderId);
+
+    Order checkRazorpayStatus(Order order);
+
+    void emailSender(int userId, OrderViewModel orderViewModel);
+
+    OrderViewModel fetchOrder(int orderId);
 
 }

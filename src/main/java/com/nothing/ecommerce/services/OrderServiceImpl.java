@@ -6,6 +6,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -14,12 +16,16 @@ import com.nothing.ecommerce.entity.Address;
 import com.nothing.ecommerce.entity.Order;
 import com.nothing.ecommerce.entity.OrderItem;
 import com.nothing.ecommerce.entity.Product;
+import com.nothing.ecommerce.entity.User;
 import com.nothing.ecommerce.exception.AddressNotFoundException;
+import com.nothing.ecommerce.exception.InvalidOrderIdException;
 import com.nothing.ecommerce.exception.InvalidProductIdException;
 import com.nothing.ecommerce.exception.OrderNotFoundException;
 import com.nothing.ecommerce.exception.UnAuthorizedPaymentCallbackException;
 import com.nothing.ecommerce.exception.UnAuthorizedUserException;
 import com.nothing.ecommerce.exception.UnknownErrorException;
+import com.nothing.ecommerce.exception.UserNotFoundException;
+import com.nothing.ecommerce.miscellaneous.EmailTemplate;
 import com.nothing.ecommerce.model.OrderRequest;
 import com.nothing.ecommerce.model.OrderViewModel;
 import com.nothing.ecommerce.model.PaymentCallbackRequest;
@@ -46,6 +52,8 @@ public class OrderServiceImpl implements OrderService {
     private OrderRepository orderRepository;
     @Autowired
     private AddressService addressService;
+    @Autowired
+    private EmailService emailService;
 
     private RazorpayClient razorpayClient;
     private static final long EXPIRATION_TIME_LIMIT = 30 * 60 * 1000; // 30 minutes
@@ -55,6 +63,8 @@ public class OrderServiceImpl implements OrderService {
 
     @Value("${razorpay.secret.key}")
     private String razorpaySecret;
+
+    private static final Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
 
     @Override
     public OrderPaymentRequest create(String reference, OrderRequest orderRequest) {
@@ -163,6 +173,9 @@ public class OrderServiceImpl implements OrderService {
                     order.setRazorpayPaymentId(request.getRazorpay_payment_id());
 
                     orderRepository.save(order); // update order status to paid in DataBase
+
+                    // Send email to the customer
+                    emailSender(order.getUserId(), fetchOrder(order.getOrderId()));
                 } else {
                     throw new OrderNotFoundException("Error: order not found");
                 }
@@ -220,6 +233,33 @@ public class OrderServiceImpl implements OrderService {
         return orderViewModels;
     }
 
+    @Override
+    public OrderViewModel fetchOrder(int orderId) {
+        Optional<Order> optinalOrder = orderRepository.findById(orderId);
+
+        if (optinalOrder.isPresent()) {
+            Order order = optinalOrder.get();
+
+            List<OrderItem> orderItems = orderItemRepository.findByOrderId(order.getOrderId());
+            List<ProductOrderResponse> products = new ArrayList<ProductOrderResponse>();
+
+            for (OrderItem orderItem : orderItems) {
+                Product product = productService.findById(orderItem.getProductId());
+                products.add(new ProductOrderResponse(product, orderItem.getQuantity()));
+            }
+
+            return new OrderViewModel(order, products);
+        } else {
+            throw new InvalidOrderIdException("Error: Order with id #" + orderId + " not found");
+        }
+    }
+
+    @Override
+    public String fetchOrderStatus(int orderId) {
+        return orderRepository.findStatusByOrderId(orderId).orElse("Error: Invalid Order Id");
+    }
+
+    @Override
     public Order checkRazorpayStatus(Order order) {
         try {
             razorpayClient = new RazorpayClient(razorpayKey, razorpaySecret);
@@ -241,6 +281,10 @@ public class OrderServiceImpl implements OrderService {
                 if (captured) {
                     order.setStatus("paid");
                     order.setRazorpayPaymentId(paymentId);
+
+                    // Send email to the customer
+                    emailSender(order.getUserId(), fetchOrder(order.getOrderId()));
+
                     return orderRepository.save(order);
                 }
             }
@@ -250,4 +294,56 @@ public class OrderServiceImpl implements OrderService {
             throw new UnknownErrorException("Error: error creating Razorpay client");
         }
     }
+
+    @Override
+    public void emailSender(int userId, OrderViewModel orderViewModel) {
+
+        User user = userService.findById(userId);
+
+        if (user != null) {
+
+            String companyName = "Ecommerce Web";
+            String productDetails = productDetailsConverter(orderViewModel.getProducts());
+            String trackingLink = "http://localhost:8080/orders/track?order_id=";
+            String email = user.getEmail();
+            String emailSubject = "Order Purchase Details";
+
+            String orderTemplate = EmailTemplate.EMAIL_ORDER_TEMPLATE;
+
+            String formatedMessage = String.format(
+                    orderTemplate, orderViewModel.getOrderId(),
+                    user.getName(), companyName,
+                    orderViewModel.getOrderDate(), orderViewModel.getTotalAmount(),
+                    orderViewModel.getStatus(), orderViewModel.getShippingAddress(), productDetails,
+                    trackingLink + orderViewModel.getOrderId(),
+                    companyName);
+
+            try {
+
+                emailService.sendEmail(email, emailSubject, formatedMessage);
+
+            } catch (Exception e) {
+
+                logger.error("Error sending email: " + e.getMessage(), e);
+
+            }
+        } else {
+            throw new UserNotFoundException("Error: User not found");
+        }
+    }
+
+    String productDetailsConverter(List<ProductOrderResponse> products) {
+        StringBuilder productDetailBuilder = new StringBuilder();
+
+        for (ProductOrderResponse product : products) {
+            productDetailBuilder.append(product.getName())
+                    .append("   ")
+                    .append(product.getPrice())
+                    .append("   ")
+                    .append(product.getQuantity());
+        }
+
+        return productDetailBuilder.toString();
+    }
+
 }
