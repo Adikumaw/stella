@@ -28,6 +28,7 @@ import com.nothing.ecommerce.model.ProductOrderRequest;
 import com.nothing.ecommerce.model.ProductOrderResponse;
 import com.nothing.ecommerce.repository.OrderItemRepository;
 import com.nothing.ecommerce.repository.OrderRepository;
+import com.razorpay.Payment;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
 import com.razorpay.Utils;
@@ -57,11 +58,13 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public OrderPaymentRequest create(String reference, OrderRequest orderRequest) {
+
         int addressId = orderRequest.getAddressId();
         List<ProductOrderRequest> productsOrderRequest = orderRequest.getOrders();
 
         // verity userId
         int userId = userService.findUserIdByReference(reference);
+
         // verity user Address
         Address address = addressService.findById(addressId);
         if (address == null) {
@@ -71,6 +74,7 @@ public class OrderServiceImpl implements OrderService {
         }
 
         List<Double> productPrices = new ArrayList<Double>();
+
         // verify product Id and create product prices list
         for (ProductOrderRequest ProductRequest : productsOrderRequest) {
             int productId = ProductRequest.getProductId();
@@ -109,12 +113,12 @@ public class OrderServiceImpl implements OrderService {
             razorpayOrderRequest.put("amount", totalPrice * 100); // amount in paisa
             razorpayOrderRequest.put("currency", "INR");
             razorpayOrderRequest.put("receipt", reference);
+
             // create razorpay Client instance
             razorpayClient = new RazorpayClient(razorpayKey, razorpaySecret);
+
             // create razorpay Order
             com.razorpay.Order razorpayOrder = razorpayClient.orders.create(razorpayOrderRequest);
-
-            System.out.println(razorpayOrder);
 
             // fetch razorpay id, status and total price and set to product order
             order.setTotalAmount(totalPrice);
@@ -123,37 +127,41 @@ public class OrderServiceImpl implements OrderService {
             order = orderRepository.save(order); // update order to DataBase
 
             return new OrderPaymentRequest(order, razorpayKey); // return OrderResponse object
-
-        } catch (Exception e) {
+        }
+        // Delete order from DataBase any issue occurred
+        catch (Exception e) {
 
             for (OrderItem orderItem : orderItems) {
                 orderItemRepository.delete(orderItem); // delete the orderItems from DataBase
             }
             orderRepository.delete(order); // delete the order from DataBase
 
-            if (e.getClass() == RazorpayException.class) {
-                e.printStackTrace();
-                throw new UnknownErrorException("Error: error creating Razorpay client");
-            }
-            throw new UnknownErrorException("Error: error creating Order");
+            throw new UnknownErrorException("Error: error creating Order {" + e.getMessage() + "}");
         }
     }
 
     @Override
     public void handlePaymentCallback(PaymentCallbackRequest request) {
         try {
+            // fetch callback information
             JSONObject options = new JSONObject();
             options.put("razorpay_order_id", request.getRazorpay_order_id());
             options.put("razorpay_payment_id", request.getRazorpay_payment_id());
             options.put("razorpay_signature", request.getRazorpay_signature());
 
+            // verify from razorpay Api
             boolean status = Utils.verifyPaymentSignature(options, razorpaySecret);
 
             if (status) {
                 Optional<Order> optionalOrder = orderRepository.findByRazorpayId(request.getRazorpay_order_id());
+
+                // update status / payment id to database
                 if (optionalOrder.isPresent()) {
                     Order order = optionalOrder.get();
-                    order.setStatus("approved");
+
+                    order.setStatus("paid");
+                    order.setRazorpayPaymentId(request.getRazorpay_payment_id());
+
                     orderRepository.save(order); // update order status to paid in DataBase
                 } else {
                     throw new OrderNotFoundException("Error: order not found");
@@ -175,11 +183,22 @@ public class OrderServiceImpl implements OrderService {
         Date currentDate = new Date();
 
         for (Order order : orders) {
-            // check if the order is not expired
+            // create order Expiry data/time
             Date orderExpiry = new Date(order.getOrderDate().getTime() + EXPIRATION_TIME_LIMIT);
             List<OrderItem> orderItems = orderItemRepository.findByOrderId(order.getOrderId());
 
-            if (orderExpiry.after(currentDate) || order.getStatus() != "created") {
+            // Check for payments are completed or not completed
+            if (order.getStatus().equals("created")) {
+                order = checkRazorpayStatus(order);
+                // continue for orders which are not created yet
+                if (order == null) {
+                    continue;
+                }
+            }
+
+            // check if the order is not expired
+            if (orderExpiry.after(currentDate) || !order.getStatus().equals("created")) {
+
                 List<ProductOrderResponse> products = new ArrayList<ProductOrderResponse>();
 
                 for (OrderItem orderItem : orderItems) {
@@ -199,5 +218,36 @@ public class OrderServiceImpl implements OrderService {
         }
 
         return orderViewModels;
+    }
+
+    public Order checkRazorpayStatus(Order order) {
+        try {
+            razorpayClient = new RazorpayClient(razorpayKey, razorpaySecret);
+
+            String orderId = order.getRazorpayId();
+            // for orders which are not created yet
+            if (orderId == null) {
+                return null;
+            }
+
+            List<Payment> payments = razorpayClient.orders.fetchPayments(orderId);
+
+            for (Payment payment : payments) {
+
+                Boolean captured = payment.get("captured");
+                String paymentId = payment.get("id");
+
+                // update status and payment id if captured
+                if (captured) {
+                    order.setStatus("paid");
+                    order.setRazorpayPaymentId(paymentId);
+                    return orderRepository.save(order);
+                }
+            }
+
+            return order;
+        } catch (RazorpayException e) {
+            throw new UnknownErrorException("Error: error creating Razorpay client");
+        }
     }
 }

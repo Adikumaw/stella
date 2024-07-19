@@ -31,13 +31,15 @@ public class Order {
     @Column(name = "total_amount")
     private double totalAmount;
     // allowed values
-    // ('created','approved','processing','shipped','delivered','cancelled')
+    // enum('creating','created','paid','processing','shipped','delivered','cancelled')
     @Column(name = "status")
     private String status;
     @Column(name = "shipping_address")
     private String shippingAddress;
     @Column(name = "razorpay_id")
     private String razorpayId;
+    @Column(name = "razorpay_payment_id")
+    private String razorpayPaymentId;
 
     public Order(int userId, double totalAmount, String status, String shippingAddress, String razorpayId) {
         this.userId = userId;
