@@ -97,9 +97,9 @@ public class EmailTemplate {
                 Shipping Address: %s
 
             Order Details
-            $s
+            %s
 
-            You can track your order status at $s.
+            You can track your order status at %s.
 
             If you have any questions or require assistance, please contact our customer support.
 
