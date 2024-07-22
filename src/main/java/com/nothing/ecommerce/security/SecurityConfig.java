@@ -28,14 +28,14 @@ public class SecurityConfig {
         http.authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
                 // USER ENDPOINTS
                 .requestMatchers(HttpMethod.POST, "/users/register").permitAll()
-                .requestMatchers(HttpMethod.GET, "/users/verify-user*").permitAll()
-                .requestMatchers(HttpMethod.GET, "/users/verify-update*").permitAll()
+                .requestMatchers(HttpMethod.GET, "/users/verify-user").permitAll()
+                .requestMatchers(HttpMethod.GET, "/users/verify-update").permitAll()
                 .requestMatchers(HttpMethod.GET, "/users/register/resend-token").permitAll()
                 .requestMatchers(HttpMethod.GET, "/users/test").permitAll()
                 // SELLER ENDPOINTS
                 .requestMatchers(HttpMethod.POST, "/sellers/register").permitAll()
                 .requestMatchers(HttpMethod.POST, "/sellers/upgrade").hasRole("BUYER")
-                .requestMatchers(HttpMethod.GET, "/sellers/verify-update*").permitAll()
+                .requestMatchers(HttpMethod.GET, "/sellers/verify-update").permitAll()
                 .requestMatchers(HttpMethod.PUT, "/sellers/store-name").hasRole("SELLER")
                 .requestMatchers(HttpMethod.PUT, "/sellers/address").hasRole("SELLER")
                 .requestMatchers(HttpMethod.POST, "/sellers/logo").hasRole("SELLER")
@@ -51,7 +51,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.DELETE, "/products/de-activate").hasRole("SELLER")
                 .requestMatchers(HttpMethod.POST, "/products/activate").hasRole("SELLER")
                 // ORDER ENDPOINTS
-                .requestMatchers(HttpMethod.GET, "/orders/track?order_id=*").permitAll()
+                .requestMatchers(HttpMethod.GET, "/orders/track").permitAll()
                 .anyRequest().authenticated());
 
         // transfering exception control to JWTAuthenticationEntryPoint

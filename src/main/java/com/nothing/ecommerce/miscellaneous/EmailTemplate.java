@@ -52,7 +52,7 @@ public class EmailTemplate {
             You recently updated your details on %s. To ensure the accuracy of your information and the security of your account, please verify these changes.
 
             Updated Details:
-            * %s
+            %s
 
             Click the button below to confirm your updated details:
             [Verify Details Button](%s)

@@ -335,12 +335,20 @@ public class OrderServiceImpl implements OrderService {
     String productDetailsConverter(List<ProductOrderResponse> products) {
         StringBuilder productDetailBuilder = new StringBuilder();
 
+        productDetailBuilder.append("Product Name")
+                .append("\t")
+                .append("Price")
+                .append("\t")
+                .append("Quantity")
+                .append("\n");
+
         for (ProductOrderResponse product : products) {
             productDetailBuilder.append(product.getName())
-                    .append("   ")
+                    .append("\t")
                     .append(product.getPrice())
-                    .append("   ")
-                    .append(product.getQuantity());
+                    .append("\t")
+                    .append(product.getQuantity())
+                    .append("\n");
         }
 
         return productDetailBuilder.toString();
