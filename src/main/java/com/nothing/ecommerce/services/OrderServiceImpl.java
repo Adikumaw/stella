@@ -20,6 +20,7 @@ import com.nothing.ecommerce.entity.User;
 import com.nothing.ecommerce.exception.AddressNotFoundException;
 import com.nothing.ecommerce.exception.InvalidOrderIdException;
 import com.nothing.ecommerce.exception.InvalidProductIdException;
+import com.nothing.ecommerce.exception.InvalidProductQuantityException;
 import com.nothing.ecommerce.exception.OrderNotFoundException;
 import com.nothing.ecommerce.exception.UnAuthorizedPaymentCallbackException;
 import com.nothing.ecommerce.exception.UnAuthorizedUserException;
@@ -86,13 +87,17 @@ public class OrderServiceImpl implements OrderService {
         List<Double> productPrices = new ArrayList<Double>();
 
         // verify product Id and create product prices list
-        for (ProductOrderRequest ProductRequest : productsOrderRequest) {
-            int productId = ProductRequest.getProductId();
-            Double price = productService.findPriceById(productId);
-            if (price == 0.0) {
-                throw new InvalidProductIdException("Error: Product not found with id " + productId);
+        for (ProductOrderRequest productRequest : productsOrderRequest) {
+            if (productRequest.getQuantity() >= 1) {
+                int productId = productRequest.getProductId();
+                Double price = productService.findPriceById(productId);
+                if (price == 0.0) {
+                    throw new InvalidProductIdException("Error: Product not found with id " + productId);
+                } else {
+                    productPrices.add(price);
+                }
             } else {
-                productPrices.add(price);
+                throw new InvalidProductQuantityException("Error: Quantity must be one or more");
             }
         }
 
