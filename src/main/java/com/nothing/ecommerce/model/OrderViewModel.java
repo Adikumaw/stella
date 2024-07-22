@@ -5,8 +5,10 @@ import java.util.List;
 import com.nothing.ecommerce.entity.Order;
 
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Data
+@NoArgsConstructor
 public class OrderViewModel {
     private int orderId;
     private String orderDate;
@@ -15,9 +17,6 @@ public class OrderViewModel {
     private String status;
     private String shippingAddress;
     private List<ProductOrderResponse> products;
-
-    public OrderViewModel() {
-    }
 
     public OrderViewModel(int orderId, String orderDate, double totalAmount, String status, String shippingAddress,
             List<ProductOrderResponse> products) {

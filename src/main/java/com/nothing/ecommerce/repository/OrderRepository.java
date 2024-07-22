@@ -1,5 +1,6 @@
 package com.nothing.ecommerce.repository;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,4 +18,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     Optional<String> findStatusByOrderId(int orderId);
 
     List<Order> findByUserId(int userId);
+
+    @Query("SELECT o.orderDate FROM Order o WHERE o.orderId = ?1")
+    Optional<Date> findOrderDateByOrderId(int orderId);
 }

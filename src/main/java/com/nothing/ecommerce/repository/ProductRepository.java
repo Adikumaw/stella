@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import com.nothing.ecommerce.entity.Product;
+import com.nothing.ecommerce.model.ProductIdAndNameModel;
 
 @Repository
 public interface ProductRepository extends JpaRepository<Product, Integer> {
@@ -23,4 +24,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
     @Query("SELECT p.price FROM Product p WHERE p.id = ?1")
     Optional<Double> findPriceById(int id);
+
+    @Query("SELECT new com.nothing.ecommerce.model.ProductIdAndNameModel(p.id, p.name) FROM Product p WHERE p.userId = ?1")
+    List<ProductIdAndNameModel> findProductIdAndNameByUserId(int userId);
 }

@@ -18,6 +18,7 @@ import com.nothing.ecommerce.exception.InvalidProductIdException;
 import com.nothing.ecommerce.exception.InvalidStoreNameException;
 import com.nothing.ecommerce.exception.UnAuthorizedUserException;
 import com.nothing.ecommerce.exception.UsedProductNameException;
+import com.nothing.ecommerce.model.ProductIdAndNameModel;
 import com.nothing.ecommerce.model.ProductInputModel;
 import com.nothing.ecommerce.model.ProductUpdateModel;
 import com.nothing.ecommerce.model.ProductViewModel;
@@ -342,6 +343,11 @@ public class ProductServiceImpl implements ProductService {
     @Override
     public Boolean existsById(int id) {
         return productRepository.existsById(id);
+    }
+
+    @Override
+    public List<ProductIdAndNameModel> findProductIdAndNameByUserId(int userId) {
+        return productRepository.findProductIdAndNameByUserId(userId);
     }
 
 }

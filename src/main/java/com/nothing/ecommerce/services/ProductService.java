@@ -5,6 +5,7 @@ import java.util.List;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.nothing.ecommerce.entity.Product;
+import com.nothing.ecommerce.model.ProductIdAndNameModel;
 import com.nothing.ecommerce.model.ProductInputModel;
 import com.nothing.ecommerce.model.ProductUpdateModel;
 import com.nothing.ecommerce.model.ProductViewModel;
@@ -27,6 +28,8 @@ public interface ProductService {
     int findIdByCategory(String category);
 
     Double findPriceById(int productId);
+
+    List<ProductIdAndNameModel> findProductIdAndNameByUserId(int userId);
 
     Product findById(int productId);
 

@@ -3,6 +3,7 @@ package com.nothing.ecommerce.services;
 import com.nothing.ecommerce.model.OrderRequest;
 import com.nothing.ecommerce.model.OrderViewModel;
 import com.nothing.ecommerce.model.PaymentCallbackRequest;
+import com.nothing.ecommerce.model.SellerOrderViewModel;
 
 import java.util.List;
 
@@ -23,5 +24,7 @@ public interface OrderService {
     void emailSender(int userId, OrderViewModel orderViewModel);
 
     OrderViewModel fetchOrder(int orderId);
+
+    List<SellerOrderViewModel> fetchOrdersByProductId(int productId, String name);
 
 }

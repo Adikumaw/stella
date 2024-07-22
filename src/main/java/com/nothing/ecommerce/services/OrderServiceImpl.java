@@ -33,6 +33,7 @@ import com.nothing.ecommerce.model.PaymentCallbackRequest;
 import com.nothing.ecommerce.model.OrderPaymentRequest;
 import com.nothing.ecommerce.model.ProductOrderRequest;
 import com.nothing.ecommerce.model.ProductOrderResponse;
+import com.nothing.ecommerce.model.SellerOrderViewModel;
 import com.nothing.ecommerce.repository.OrderItemRepository;
 import com.nothing.ecommerce.repository.OrderRepository;
 import com.razorpay.Payment;
@@ -359,4 +360,23 @@ public class OrderServiceImpl implements OrderService {
         return productDetailBuilder.toString();
     }
 
+    @Override
+    public List<SellerOrderViewModel> fetchOrdersByProductId(int productId, String name) {
+        List<OrderItem> orderItems = orderItemRepository.findByProductId(productId);
+
+        List<SellerOrderViewModel> orders = new ArrayList<SellerOrderViewModel>();
+
+        for (OrderItem orderItem : orderItems) {
+            Optional<Date> optionalOrderDate = orderRepository.findOrderDateByOrderId(orderItem.getOrderId());
+
+            if (optionalOrderDate.isPresent()) {
+                Date orderDate = optionalOrderDate.get();
+                SellerOrderViewModel order = new SellerOrderViewModel(orderItem, name, orderDate);
+
+                orders.add(order);
+            }
+        }
+
+        return orders;
+    }
 }
