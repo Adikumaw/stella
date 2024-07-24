@@ -1,7 +1,5 @@
 package com.nothing.ecommerce.model;
 
-import java.util.Date;
-
 import com.nothing.ecommerce.entity.OrderItem;
 
 import lombok.AllArgsConstructor;
@@ -16,14 +14,16 @@ public class SellerOrderViewModel {
     private String name;
     private int quantity;
     private String orderDate;
+    private String status;
     private double price;
     private double totalAmount;
 
-    public SellerOrderViewModel(OrderItem orderItem, String name, Date orderDate) {
+    public SellerOrderViewModel(OrderItem orderItem, String name, StatusAndDateModel statusAndDate) {
         this.productId = orderItem.getProductId();
         this.name = name;
         this.quantity = orderItem.getQuantity();
-        this.orderDate = orderDate.toString();
+        this.orderDate = statusAndDate.getDate().toString();
+        this.status = statusAndDate.getStatus();
         this.price = orderItem.getPrice();
         this.totalAmount = orderItem.getTotalPrice();
     }

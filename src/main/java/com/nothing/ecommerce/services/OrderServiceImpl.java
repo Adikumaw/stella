@@ -34,6 +34,7 @@ import com.nothing.ecommerce.model.OrderPaymentRequest;
 import com.nothing.ecommerce.model.ProductOrderRequest;
 import com.nothing.ecommerce.model.ProductOrderResponse;
 import com.nothing.ecommerce.model.SellerOrderViewModel;
+import com.nothing.ecommerce.model.StatusAndDateModel;
 import com.nothing.ecommerce.repository.OrderItemRepository;
 import com.nothing.ecommerce.repository.OrderRepository;
 import com.razorpay.Payment;
@@ -367,12 +368,12 @@ public class OrderServiceImpl implements OrderService {
         List<SellerOrderViewModel> orders = new ArrayList<SellerOrderViewModel>();
 
         for (OrderItem orderItem : orderItems) {
-            Optional<Date> optionalOrderDate = orderRepository.findOrderDateByOrderId(orderItem.getOrderId());
+            Optional<StatusAndDateModel> optionalStatusAndDate = orderRepository
+                    .findPaidStatusAndOrderDateByOrderId(orderItem.getOrderId());
 
-            if (optionalOrderDate.isPresent()) {
-                Date orderDate = optionalOrderDate.get();
-                SellerOrderViewModel order = new SellerOrderViewModel(orderItem, name, orderDate);
-
+            if (optionalStatusAndDate.isPresent()) {
+                StatusAndDateModel statusAndDate = optionalStatusAndDate.get();
+                SellerOrderViewModel order = new SellerOrderViewModel(orderItem, name, statusAndDate);
                 orders.add(order);
             }
         }
