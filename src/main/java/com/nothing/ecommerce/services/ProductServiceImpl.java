@@ -350,4 +350,9 @@ public class ProductServiceImpl implements ProductService {
         return productRepository.findProductIdAndNameByUserId(userId);
     }
 
+    @Override
+    public int findUserIdByProductId(int productId) {
+        return productRepository.findUserIdByProductId(productId).orElse(0);
+    }
+
 }

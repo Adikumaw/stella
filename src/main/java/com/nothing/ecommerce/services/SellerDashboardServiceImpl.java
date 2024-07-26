@@ -1,13 +1,14 @@
 package com.nothing.ecommerce.services;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import com.nothing.ecommerce.model.ProductIdAndNameModel;
+import com.nothing.ecommerce.exception.InvalidOrderItemStatusException;
+import com.nothing.ecommerce.exception.UnAuthorizedUserException;
 import com.nothing.ecommerce.model.SellerOrderViewModel;
+import com.nothing.ecommerce.model.UpdateOrderItemStatusModal;
 
 @Service
 public class SellerDashboardServiceImpl implements SellerDashboardService {
@@ -15,26 +16,43 @@ public class SellerDashboardServiceImpl implements SellerDashboardService {
     @Autowired
     private UserService userService;
     @Autowired
-    private ProductService productService;
-    @Autowired
     private OrderService orderService;
 
     @Override
     public List<SellerOrderViewModel> fetchOrders(String reference) {
-        int userId = userService.findUserIdByReference(reference);
+        int sellerId = userService.findUserIdByReference(reference);
 
-        List<ProductIdAndNameModel> products = productService.findProductIdAndNameByUserId(userId);
+        return orderService.fetchAllOrders(sellerId);
+    }
 
-        List<SellerOrderViewModel> sellerOrders = new ArrayList<SellerOrderViewModel>();
+    @Override
+    public List<SellerOrderViewModel> updateOrderItemStatus(String reference, UpdateOrderItemStatusModal request) {
+        int sellerId = userService.findUserIdByReference(reference);
 
-        for (ProductIdAndNameModel product : products) {
-            List<SellerOrderViewModel> orders = orderService.fetchOrdersByProductId(product.getProductId(),
-                    product.getName());
+        Boolean verifySeller = orderService.verifySellerAccessByOrderItemId(sellerId, request.getOrder_id());
 
-            sellerOrders.addAll(orders);
+        if (verifySeller) {
+
+            switch (request.getStatus()) {
+                case "accepted":
+                    orderService.updateOrderItemStatusToAccepted(request.getOrder_id());
+                    break;
+                case "canceled":
+                    orderService.updateOrderItemStatusToCanceled(request.getOrder_id());
+                    break;
+                case "shipped":
+                    orderService.updateOrderItemStatusToShipped(request.getOrder_id());
+                    break;
+                default:
+                    throw new InvalidOrderItemStatusException("Error: Invalid order item status");
+            }
+
+            return orderService.fetchAllOrders(sellerId);
+
+        } else {
+            throw new UnAuthorizedUserException(
+                    "Error: Access denied!, you are not allowed to update this order status");
         }
-
-        return sellerOrders;
     }
 
 }

@@ -26,6 +26,9 @@ public class OrderItem {
     private int orderId;
     @Column(name = "product_id")
     private int productId;
+    // enum('waiting','accepted','canceled','shipped')
+    @Column(name = "status")
+    private String status;
     @Column(name = "quantity")
     private int quantity;
     @Column(name = "amount")
@@ -36,6 +39,7 @@ public class OrderItem {
     public OrderItem(int orderId, int productId, int quantity, double price) {
         this.orderId = orderId;
         this.productId = productId;
+        this.status = "waiting"; // set the initial status as waiting when creating an orderItem
         this.quantity = quantity;
         this.price = price;
         this.totalPrice = quantity * price;

@@ -19,22 +19,25 @@ import com.nothing.ecommerce.entity.Product;
 import com.nothing.ecommerce.entity.User;
 import com.nothing.ecommerce.exception.AddressNotFoundException;
 import com.nothing.ecommerce.exception.InvalidOrderIdException;
+import com.nothing.ecommerce.exception.InvalidOrderItemIdException;
 import com.nothing.ecommerce.exception.InvalidProductIdException;
 import com.nothing.ecommerce.exception.InvalidProductQuantityException;
+import com.nothing.ecommerce.exception.InvalidUpdateOrderItemRequestException;
 import com.nothing.ecommerce.exception.OrderNotFoundException;
 import com.nothing.ecommerce.exception.UnAuthorizedPaymentCallbackException;
 import com.nothing.ecommerce.exception.UnAuthorizedUserException;
 import com.nothing.ecommerce.exception.UnknownErrorException;
+import com.nothing.ecommerce.exception.UserIdNotFoundException;
 import com.nothing.ecommerce.exception.UserNotFoundException;
 import com.nothing.ecommerce.miscellaneous.EmailTemplate;
 import com.nothing.ecommerce.model.OrderRequest;
 import com.nothing.ecommerce.model.OrderViewModel;
 import com.nothing.ecommerce.model.PaymentCallbackRequest;
+import com.nothing.ecommerce.model.ProductIdAndNameModel;
 import com.nothing.ecommerce.model.OrderPaymentRequest;
 import com.nothing.ecommerce.model.ProductOrderRequest;
 import com.nothing.ecommerce.model.ProductOrderResponse;
 import com.nothing.ecommerce.model.SellerOrderViewModel;
-import com.nothing.ecommerce.model.StatusAndDateModel;
 import com.nothing.ecommerce.repository.OrderItemRepository;
 import com.nothing.ecommerce.repository.OrderRepository;
 import com.razorpay.Payment;
@@ -69,6 +72,9 @@ public class OrderServiceImpl implements OrderService {
 
     private static final Logger logger = LoggerFactory.getLogger(OrderServiceImpl.class);
 
+    // --------------------------------------------------------
+    // Functions for Buyer
+    // --------------------------------------------------------
     @Override
     public OrderPaymentRequest create(String reference, OrderRequest orderRequest) {
 
@@ -361,23 +367,144 @@ public class OrderServiceImpl implements OrderService {
         return productDetailBuilder.toString();
     }
 
+    // ----------------------------------------------------------------
+    // Functions for SellerDashBoard
+    // ----------------------------------------------------------------
     @Override
-    public List<SellerOrderViewModel> fetchOrdersByProductId(int productId, String name) {
-        List<OrderItem> orderItems = orderItemRepository.findByProductId(productId);
+    public List<SellerOrderViewModel> fetchAllOrders(int sellerId) {
+        // fetch product name and ID from the database
+        List<ProductIdAndNameModel> products = productService.findProductIdAndNameByUserId(sellerId);
 
-        List<SellerOrderViewModel> orders = new ArrayList<SellerOrderViewModel>();
+        List<SellerOrderViewModel> sellerOrders = new ArrayList<SellerOrderViewModel>();
 
-        for (OrderItem orderItem : orderItems) {
-            Optional<StatusAndDateModel> optionalStatusAndDate = orderRepository
-                    .findPaidStatusAndOrderDateByOrderId(orderItem.getOrderId());
+        for (ProductIdAndNameModel product : products) {
+            // fetch Order Items from the database
+            List<OrderItem> orderItems = orderItemRepository.findByProductId(product.getProductId());
 
-            if (optionalStatusAndDate.isPresent()) {
-                StatusAndDateModel statusAndDate = optionalStatusAndDate.get();
-                SellerOrderViewModel order = new SellerOrderViewModel(orderItem, name, statusAndDate);
-                orders.add(order);
+            // fetch date for all items seperatly and add to sellerOrders list
+            for (OrderItem orderItem : orderItems) {
+                Optional<Date> optionalDate = orderRepository
+                        .findPaidOrderDateByOrderId(orderItem.getOrderId());
+
+                if (optionalDate.isPresent()) {
+                    Date orderDate = optionalDate.get();
+
+                    SellerOrderViewModel order = new SellerOrderViewModel(orderItem, product.getName(), orderDate);
+
+                    sellerOrders.add(order); // add order to the sellerOrders List
+                }
             }
         }
 
-        return orders;
+        return sellerOrders;
     }
+
+    @Override
+    public Boolean verifySellerAccessByOrderItemId(int sellerId, int orderItemId) {
+        // fetch PoductID by orderItemId
+        Optional<Integer> optionalProductId = orderItemRepository.findProductIdByOrderItemId(orderItemId);
+
+        if (optionalProductId.isPresent()) {
+            int productId = optionalProductId.get();
+
+            // fetch seller ID from product ID
+            int fetchedSellerId = productService.findUserIdByProductId(productId);
+
+            if (fetchedSellerId != 0) {
+
+                // Compare fetched seller ID with the given seller ID
+                return sellerId == fetchedSellerId;
+
+            } else {
+                throw new UserIdNotFoundException("Error: Seller ID not found for this product");
+            }
+
+        } else {
+            throw new InvalidOrderItemIdException("Error: order item ID is not valid");
+        }
+    }
+
+    @Override
+    public void updateOrderItemStatusToAccepted(int orderItemId) {
+        // fetch OrderItem by orderItemId
+        Optional<OrderItem> optionalOrderItem = orderItemRepository.findById(orderItemId);
+
+        if (optionalOrderItem.isPresent()) {
+            OrderItem orderItem = optionalOrderItem.get();
+
+            if (orderItem.getStatus().equals("waiting")) {
+                // update status to accepted
+                orderItem.setStatus("accepted");
+
+                orderItemRepository.save(orderItem);
+            } else {
+                throw new InvalidUpdateOrderItemRequestException("Error: faulty request, Access Denied!");
+            }
+        } else {
+            throw new InvalidOrderItemIdException("Error: Order Item Id is invalid");
+        }
+    }
+
+    @Override
+    public void updateOrderItemStatusToCanceled(int orderItemId) {
+        // fetch OrderItem by orderItemId
+        Optional<OrderItem> optionalOrderItem = orderItemRepository.findById(orderItemId);
+
+        if (optionalOrderItem.isPresent()) {
+            OrderItem orderItem = optionalOrderItem.get();
+
+            if (orderItem.getStatus().equals("waiting")) {
+                Optional<Order> optionalOrder = orderRepository.findById(orderItem.getOrderId());
+
+                if (optionalOrder.isPresent()) {
+                    Order order = optionalOrder.get();
+
+                    Double totalAmount = order.getTotalAmount();
+                    totalAmount = totalAmount - orderItem.getTotalPrice();
+
+                    // update total amount
+                    order.setTotalAmount(totalAmount);
+                    // update order status to cancelled if total amount is zero
+                    if (totalAmount == 0) {
+                        order.setStatus("canceled");
+                    }
+                    orderRepository.save(order);
+
+                    // update status to accepted
+                    orderItem.setStatus("canceled");
+                    orderItemRepository.save(orderItem);
+
+                } else {
+                    throw new OrderNotFoundException("Error: Order not found for this Order Item");
+                }
+            } else {
+                throw new InvalidUpdateOrderItemRequestException("Error: faulty request, Access Denied!");
+            }
+        } else {
+            throw new InvalidOrderItemIdException("Error: Order Item Id is invalid");
+        }
+    }
+
+    @Override
+    public void updateOrderItemStatusToShipped(int orderItemId) {
+        // fetch OrderItem by orderItemId
+        Optional<OrderItem> optionalOrderItem = orderItemRepository.findById(orderItemId);
+
+        if (optionalOrderItem.isPresent()) {
+            OrderItem orderItem = optionalOrderItem.get();
+
+            if (orderItem.getStatus().equals("accepted")) {
+                // update status to accepted
+                orderItem.setStatus("shipped");
+
+                orderItemRepository.save(orderItem);
+
+            } else {
+                throw new InvalidUpdateOrderItemRequestException("Error: faulty request, Access Denied!");
+            }
+        } else {
+            throw new InvalidOrderItemIdException("Error: Order Item Id is invalid");
+        }
+    }
+
 }

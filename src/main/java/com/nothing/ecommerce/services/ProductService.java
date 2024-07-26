@@ -31,6 +31,8 @@ public interface ProductService {
 
     List<ProductIdAndNameModel> findProductIdAndNameByUserId(int userId);
 
+    int findUserIdByProductId(int productId);
+
     Product findById(int productId);
 
     Boolean existsById(int productId);

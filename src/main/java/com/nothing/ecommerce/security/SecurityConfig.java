@@ -54,6 +54,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/orders/track").permitAll()
                 // SELLER DASHBOARD ENDPOINTS
                 .requestMatchers(HttpMethod.GET, "/sellers/dashboard").hasRole("SELLER")
+                .requestMatchers(HttpMethod.POST, "/sellers/dashboard/update-order-status").hasRole("SELLER")
                 .anyRequest().authenticated());
 
         // transfering exception control to JWTAuthenticationEntryPoint

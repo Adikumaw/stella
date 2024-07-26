@@ -11,6 +11,10 @@ import com.nothing.ecommerce.entity.Order;
 import com.nothing.ecommerce.model.OrderPaymentRequest;
 
 public interface OrderService {
+
+    // --------------------------------------------------------
+    // Functions for Buyer
+    // --------------------------------------------------------
     OrderPaymentRequest create(String reference, OrderRequest orderRequest);
 
     void handlePaymentCallback(PaymentCallbackRequest request);
@@ -25,6 +29,17 @@ public interface OrderService {
 
     OrderViewModel fetchOrder(int orderId);
 
-    List<SellerOrderViewModel> fetchOrdersByProductId(int productId, String name);
+    // ----------------------------------------------------------------
+    // Functions for SellerDashBoard
+    // ----------------------------------------------------------------
+    List<SellerOrderViewModel> fetchAllOrders(int sellerId);
+
+    Boolean verifySellerAccessByOrderItemId(int sellerId, int orderItemId);
+
+    void updateOrderItemStatusToAccepted(int orderItemId);
+
+    void updateOrderItemStatusToCanceled(int orderItemId);
+
+    void updateOrderItemStatusToShipped(int orderItemId);
 
 }

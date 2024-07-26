@@ -27,4 +27,7 @@ public interface ProductRepository extends JpaRepository<Product, Integer> {
 
     @Query("SELECT new com.nothing.ecommerce.model.ProductIdAndNameModel(p.id, p.name) FROM Product p WHERE p.userId = ?1")
     List<ProductIdAndNameModel> findProductIdAndNameByUserId(int userId);
+
+    @Query("SELECT p.userId FROM Product p WHERE p.id = ?1")
+    Optional<Integer> findUserIdByProductId(int productId);
 }
