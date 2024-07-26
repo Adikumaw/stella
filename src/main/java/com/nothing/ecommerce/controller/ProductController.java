@@ -77,29 +77,6 @@ public class ProductController {
         }
     }
 
-    @GetMapping
-    public List<ProductViewModel> getProductsByReference(@RequestHeader("Authorization") String jwtHeader) {
-        if (jwtService.verifyJwtHeader(jwtHeader)) {
-            // extract token from request header
-            String jwtToken = jwtHeader.substring(7);
-            try {
-                String reference = jwtService.fetchReference(jwtToken);
-
-                return productService.getProductsByReference(reference);
-
-            } catch (ProductException e) {
-                throw e;
-            } catch (UserException e) {
-                throw e;
-            } catch (Exception e) {
-                logger.error("Unknown error: " + e.getMessage(), e);
-                throw new UnknownErrorException("Error: unknown error");
-            }
-        } else {
-            throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
-        }
-    }
-
     @GetMapping("/store")
     public List<ProductViewModel> getProductsByStoreName(@RequestParam("store") String storeName) {
         // extract token from request header

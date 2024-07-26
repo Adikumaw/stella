@@ -17,9 +17,11 @@ import com.nothing.ecommerce.exception.OrderException;
 import com.nothing.ecommerce.exception.ProductException;
 import com.nothing.ecommerce.exception.UnknownErrorException;
 import com.nothing.ecommerce.exception.UserException;
+import com.nothing.ecommerce.model.ProductViewModel;
 import com.nothing.ecommerce.model.SellerOrderViewModel;
 import com.nothing.ecommerce.model.UpdateOrderItemStatusModal;
 import com.nothing.ecommerce.services.JWTService;
+import com.nothing.ecommerce.services.ProductService;
 import com.nothing.ecommerce.services.SellerDashboardService;
 
 @RestController
@@ -30,10 +32,12 @@ public class SellerDashboardController {
     private JWTService jwtService;
     @Autowired
     private SellerDashboardService sellerDashboardService;
+    @Autowired
+    private ProductService productService;
 
     private static final Logger logger = LoggerFactory.getLogger(SellerDashboardController.class);
 
-    @GetMapping
+    @GetMapping("/orders")
     public List<SellerOrderViewModel> getSellerOrderViewModels(@RequestHeader("Authorization") String jwtHeader) {
         if (jwtService.verifyJwtHeader(jwtHeader)) {
 
@@ -74,6 +78,29 @@ public class SellerDashboardController {
             } catch (ProductException e) {
                 throw e;
             } catch (OrderException e) {
+                throw e;
+            } catch (Exception e) {
+                logger.error("Unknown error: " + e.getMessage(), e);
+                throw new UnknownErrorException("Error: unknown error");
+            }
+        } else {
+            throw new InvalidJWTHeaderException("Error: Invalid JWTHeader");
+        }
+    }
+
+    @GetMapping("/products")
+    public List<ProductViewModel> getProducts(@RequestHeader("Authorization") String jwtHeader) {
+        if (jwtService.verifyJwtHeader(jwtHeader)) {
+            // extract token from request header
+            String jwtToken = jwtHeader.substring(7);
+            try {
+                String reference = jwtService.fetchReference(jwtToken);
+
+                return productService.getProductsByReference(reference);
+
+            } catch (ProductException e) {
+                throw e;
+            } catch (UserException e) {
                 throw e;
             } catch (Exception e) {
                 logger.error("Unknown error: " + e.getMessage(), e);
