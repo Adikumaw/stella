@@ -29,12 +29,12 @@ This project is a secure e-commerce shopping website backend developed using Jav
 
 1. **Clone the repository:**
     ```sh
-    git clone https://github.com/Adikumaw/ecommerce-shopping-website.git
-    cd ecommerce-shopping-website
+    git clone https://github.com/Adikumaw/stella.git
+    cd stella
     ```
 
 2. **Set up the database:**
-    - Create a database named `ecommerce_db` in MySQL/MariaDB.
+    - Create a database named `stella_db` in MySQL/MariaDB.
     - Update the database configuration in `src/main/resources/application.properties` with your database credentials.
 
 3. **Build the project:**
@@ -49,24 +49,50 @@ This project is a secure e-commerce shopping website backend developed using Jav
 
 ### API Endpoints
 
-#### Authentication
-- **Register User:** `POST /api/auth/register`
+#### User Management
+- **Register User:** `POST /api/users/register`
+- **Registration Verification:** `POST /api/users/verify-user?token=token`
+- **Resend Registration Verification:** `POST /api/users/register/resend-token`
 - **Login User:** `POST /api/auth/login`
+- **Fetch User Details:** `GET /api/users`
+- **Update User Name:** `PUT /api/users/name`
+- **Update User Number:** `PUT /api/users/number`
+- **Update User Email:** `PUT /api/users/email`
+- **Update User Password:** `PUT /api/users/password`
+- **Verify Update Details:** `POST /api/users/verify-update?token=token`
+- **Deactivate User Account:** `PUT /api/users/de-activate`
+- **Save User Address:** `POST /api/users/address`
+- **Fetch User Addresses:** `GET /api/users/address`
+- **Update User Address:** `PUT /api/users/address`
+- **Delete User Address:** `DELETE /api/users/address?id=ID`
+
+#### Seller Management
+- **Seller Registration:** `POST /api/sellers/register`
+- **Upgrade User to Seller:** `POST /api/sellers/upgrade`
+- **Update Store Name:** `PUT /api/sellers/store-name`
+- **Update Seller Address:** `PUT /api/sellers/address`
+- **Set Store Logo:** `POST /api/sellers/logo`
+- **Update Store Logo:** `PUT /api/sellers/logo`
+- **Verify Update:** `POST /api/sellers/verify-update?token=TOKEN`
+
+### Seller Dashboard
+- **Fetch Orders for Seller:** `GET /api/sellers/dashboard`
+- **Update Order Status for Seller:** `POST /api/sellers/dashboard/update-order-status`
+- **Fetch Products for Seller:** `GET /api/sellers/dashboard/products`
 
 #### Product Management
-- **Get All Products:** `GET /api/products`
-- **Get Product by ID:** `GET /api/products/{id}`
-- **Add New Product:** `POST /api/products`
-- **Update Product:** `PUT /api/products/{id}`
-- **Delete Product:** `DELETE /api/products/{id}`
+- **Create Product:** `POST /api/products`
+- **Update Product:** `PUT /api/products`
+- **Search Products by Store Name:** `GET /api/products/store?store=STORE-NAME`
+- **Search Product by Name:** `GET /api/products/search?search=PRODUCT-NAME`
+- **Deactivate Product:** `DELETE /api/products/de-activate?id=ID`
+- **Activate Product:** `POST /api/products/activate?id=ID`
 
 #### Order Management
 - **Create Order:** `POST /api/orders`
-- **Get User Orders:** `GET /api/orders/user/{userId}`
-- **Get Order by ID:** `GET /api/orders/{id}`
-
-#### Payment Processing
-- **Process Payment:** `POST /api/payments`
+- **Order Payment Callback:** `POST /api/orders/payment-callback`
+- **Fetch User Orders:** `GET /api/orders`
+- **Track Order:** `GET /api/orders/track?order_id=ID`
 
 ## Usage
 - **Swagger UI:** Access the API documentation at `http://localhost:8080/swagger-ui.html` after running the application.
