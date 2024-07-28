@@ -27,7 +27,7 @@ import com.nothing.ecommerce.services.JWTService;
 import com.nothing.ecommerce.services.OrderService;
 
 @RestController
-@RequestMapping("/orders")
+@RequestMapping("/api/orders")
 @CrossOrigin(origins = "*")
 public class OrderController {
     @Autowired

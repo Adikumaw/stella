@@ -25,7 +25,7 @@ import com.nothing.ecommerce.services.JWTService;
 import com.nothing.ecommerce.services.UserService;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @CrossOrigin(origins = "https://localhost")
 public class AuthController {
 

@@ -24,7 +24,7 @@ import com.nothing.ecommerce.services.AddressService;
 import com.nothing.ecommerce.services.JWTService;
 
 @RestController
-@RequestMapping("/users/address")
+@RequestMapping("/api/users/address")
 public class AddressController {
 
     @Autowired

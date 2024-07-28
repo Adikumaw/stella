@@ -25,7 +25,7 @@ import com.nothing.ecommerce.services.ProductService;
 import com.nothing.ecommerce.services.SellerDashboardService;
 
 @RestController
-@RequestMapping("/sellers/dashboard")
+@RequestMapping("/api/sellers/dashboard")
 public class SellerDashboardController {
 
     @Autowired

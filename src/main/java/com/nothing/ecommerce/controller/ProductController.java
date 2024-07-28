@@ -28,7 +28,7 @@ import com.nothing.ecommerce.services.JWTService;
 import com.nothing.ecommerce.services.ProductService;
 
 @RestController
-@RequestMapping("/products")
+@RequestMapping("/api/products")
 public class ProductController {
 
     @Autowired

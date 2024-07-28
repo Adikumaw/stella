@@ -5,7 +5,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -27,7 +26,7 @@ import com.nothing.ecommerce.services.JWTService;
 import com.nothing.ecommerce.services.SellerService;
 
 @RestController
-@RequestMapping("/sellers")
+@RequestMapping("/api/sellers")
 public class SellerController {
     @Autowired
     private SellerService sellerService;
@@ -83,7 +82,7 @@ public class SellerController {
         }
     }
 
-    @GetMapping("/verify-update")
+    @PostMapping("/verify-update")
     public ResponseEntity<String> verifyUpdate(@RequestParam String token) {
         try {
             boolean isVerified = sellerService.verifyUpdate(token);

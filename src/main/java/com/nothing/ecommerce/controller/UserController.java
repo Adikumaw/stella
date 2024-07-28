@@ -27,7 +27,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 
 @RestController
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 public class UserController {
 
     @Autowired
@@ -57,7 +57,7 @@ public class UserController {
         }
     }
 
-    @GetMapping("/register/resend-token")
+    @PostMapping("/register/resend-token")
     public ResponseEntity<String> resendToken(@RequestBody String reference) {
         try {
             verificationTokenService.sender(reference);
@@ -71,7 +71,7 @@ public class UserController {
         }
     }
 
-    @GetMapping("/verify-user")
+    @PostMapping("/verify-user")
     public ResponseEntity<String> verify(@RequestParam String token) {
         boolean isVerified = userAdvanceService.verify(token);
 
@@ -82,7 +82,7 @@ public class UserController {
         }
     }
 
-    @GetMapping("/verify-update")
+    @PostMapping("/verify-update")
     public ResponseEntity<String> verifyUpdate(@RequestParam String token) {
         boolean isVerified = userAdvanceService.verifyUpdate(token);
 
