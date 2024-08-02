@@ -22,6 +22,7 @@ import com.nothing.stella.exception.UserException;
 import com.nothing.stella.model.OrderRequest;
 import com.nothing.stella.model.OrderViewModel;
 import com.nothing.stella.model.PaymentCallbackRequest;
+import com.nothing.stella.model.OrderByCartRequest;
 import com.nothing.stella.model.OrderPaymentRequest;
 import com.nothing.stella.services.JWTService;
 import com.nothing.stella.services.OrderService;
@@ -64,7 +65,7 @@ public class OrderController {
     }
 
     @PostMapping("/order-by-cart")
-    public OrderPaymentRequest createOrder(@RequestBody Integer addressId, @RequestBody Integer cartId,
+    public OrderPaymentRequest createOrder(@RequestBody OrderByCartRequest request,
             @RequestHeader("Authorization") String jwtHeader) {
         if (jwtService.verifyJwtHeader(jwtHeader)) {
 
@@ -73,7 +74,7 @@ public class OrderController {
             try {
                 String reference = jwtService.fetchReference(jwtToken);
 
-                return orderService.create(reference, addressId, cartId);
+                return orderService.create(reference, request.getAddressId(), request.getCartId());
             } catch (UserException e) {
                 throw e;
             } catch (ProductException e) {

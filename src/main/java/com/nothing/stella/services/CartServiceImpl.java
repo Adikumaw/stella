@@ -14,6 +14,7 @@ import com.nothing.stella.exception.CartItemNotFoundException;
 import com.nothing.stella.exception.InvalidCartIdException;
 import com.nothing.stella.exception.InvalidProductIdException;
 import com.nothing.stella.exception.InvalidProductQuantityException;
+import com.nothing.stella.exception.ProductExistsInCartException;
 import com.nothing.stella.exception.UnAuthorizedUserException;
 import com.nothing.stella.exception.UnknownErrorException;
 import com.nothing.stella.model.CartUpdateRequest;
@@ -104,19 +105,28 @@ public class CartServiceImpl implements CartService {
 
         if (cart != null) {
             if (cart.getUserId() == userId) {
-                // create Cart Item in DataBase and find total price
-                int productId = request.getProductId();
-                int quantity = request.getQuantity();
 
-                CartItem cartItem = new CartItem(cartId, productId, quantity, productPrice); // create a new cartItem
-                cartItem = cartItemRepository.save(cartItem); // save the cartItem
+                Boolean cartItemIntegrity = cartItemRepository.existsByCartIdAndProductId(cart.getCartId(),
+                        request.getProductId());
 
-                Double totalPrice = cartItem.getTotalPrice(); // fetch the total price
+                if (!cartItemIntegrity) {
+                    // create Cart Item in DataBase and find total price
+                    int productId = request.getProductId();
+                    int quantity = request.getQuantity();
 
-                cart.setTotalAmount(cart.getTotalAmount() + totalPrice);
-                cart = cartRepository.save(cart); // update cart to DataBase
+                    // create a new cartItem
+                    CartItem cartItem = new CartItem(cartId, productId, quantity, productPrice);
+                    cartItem = cartItemRepository.save(cartItem); // save the cartItem
 
-                return fetchCarts(userId);
+                    Double totalPrice = cartItem.getTotalPrice(); // fetch the total price
+
+                    cart.setTotalAmount(cart.getTotalAmount() + totalPrice);
+                    cart = cartRepository.save(cart); // update cart to DataBase
+
+                    return fetchCarts(userId);
+                } else {
+                    throw new ProductExistsInCartException("Error: this product already exists in cart");
+                }
 
             } else {
                 throw new UnAuthorizedUserException("Error: you are not allowed to access this cart");
