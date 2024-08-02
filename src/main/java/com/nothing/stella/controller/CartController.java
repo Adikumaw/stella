@@ -25,7 +25,7 @@ import com.nothing.stella.services.CartService;
 import com.nothing.stella.services.JWTService;
 
 @RestController
-@RequestMapping("/users/cart")
+@RequestMapping("/api/users/cart")
 public class CartController {
     @Autowired
     private JWTService jwtService;

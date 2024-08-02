@@ -27,35 +27,35 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.authorizeHttpRequests((authorizeHttpRequests) -> authorizeHttpRequests
                 // USER ENDPOINTS
-                .requestMatchers(HttpMethod.POST, "/users/register").permitAll()
-                .requestMatchers(HttpMethod.POST, "/users/verify-user").permitAll()
-                .requestMatchers(HttpMethod.POST, "/users/verify-update").permitAll()
-                .requestMatchers(HttpMethod.POST, "/users/register/resend-token").permitAll()
-                .requestMatchers(HttpMethod.GET, "/users/test").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/users/register").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/users/verify-user").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/users/verify-update").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/users/register/resend-token").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/users/test").permitAll()
                 // SELLER ENDPOINTS
-                .requestMatchers(HttpMethod.POST, "/sellers/register").permitAll()
-                .requestMatchers(HttpMethod.POST, "/sellers/upgrade").hasRole("BUYER")
-                .requestMatchers(HttpMethod.POST, "/sellers/verify-update").permitAll()
-                .requestMatchers(HttpMethod.PUT, "/sellers/store-name").hasRole("SELLER")
-                .requestMatchers(HttpMethod.PUT, "/sellers/address").hasRole("SELLER")
-                .requestMatchers(HttpMethod.POST, "/sellers/logo").hasRole("SELLER")
-                .requestMatchers(HttpMethod.PUT, "/sellers/logo").hasRole("SELLER")
+                .requestMatchers(HttpMethod.POST, "/api/sellers/register").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/sellers/upgrade").hasRole("BUYER")
+                .requestMatchers(HttpMethod.POST, "/api/sellers/verify-update").permitAll()
+                .requestMatchers(HttpMethod.PUT, "/api/sellers/store-name").hasRole("SELLER")
+                .requestMatchers(HttpMethod.PUT, "/api/sellers/address").hasRole("SELLER")
+                .requestMatchers(HttpMethod.POST, "/api/sellers/logo").hasRole("SELLER")
+                .requestMatchers(HttpMethod.PUT, "/api/sellers/logo").hasRole("SELLER")
                 // LOGIN ENDPOINTS
-                .requestMatchers(HttpMethod.POST, "/auth/login").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
                 // TEST ENDPOINTS
-                .requestMatchers(HttpMethod.GET, "/testseller").hasRole("SELLER")
-                .requestMatchers(HttpMethod.GET, "/testbuyer").hasRole("BUYER")
+                .requestMatchers(HttpMethod.GET, "/api/testseller").hasRole("SELLER")
+                .requestMatchers(HttpMethod.GET, "/api/testbuyer").hasRole("BUYER")
                 // PRODUCT ENDPOINTS
-                .requestMatchers(HttpMethod.POST, "/products").hasRole("SELLER")
-                .requestMatchers(HttpMethod.PUT, "/products").hasRole("SELLER")
-                .requestMatchers(HttpMethod.DELETE, "/products/de-activate").hasRole("SELLER")
-                .requestMatchers(HttpMethod.POST, "/products/activate").hasRole("SELLER")
+                .requestMatchers(HttpMethod.POST, "/api/products").hasRole("SELLER")
+                .requestMatchers(HttpMethod.PUT, "/api/products").hasRole("SELLER")
+                .requestMatchers(HttpMethod.DELETE, "/api/products/de-activate").hasRole("SELLER")
+                .requestMatchers(HttpMethod.POST, "/api/products/activate").hasRole("SELLER")
                 // ORDER ENDPOINTS
-                .requestMatchers(HttpMethod.GET, "/orders/track").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/orders/track").permitAll()
                 // SELLER DASHBOARD ENDPOINTS
-                .requestMatchers(HttpMethod.GET, "/sellers/dashboard").hasRole("SELLER")
-                .requestMatchers(HttpMethod.GET, "/sellers/dashboard/products").hasRole("SELLER")
-                .requestMatchers(HttpMethod.POST, "/sellers/dashboard/update-order-status").hasRole("SELLER")
+                .requestMatchers(HttpMethod.GET, "/api/sellers/dashboard").hasRole("SELLER")
+                .requestMatchers(HttpMethod.GET, "/api/sellers/dashboard/products").hasRole("SELLER")
+                .requestMatchers(HttpMethod.POST, "/api/sellers/dashboard/update-order-status").hasRole("SELLER")
                 .anyRequest().authenticated());
 
         // transfering exception control to JWTAuthenticationEntryPoint
