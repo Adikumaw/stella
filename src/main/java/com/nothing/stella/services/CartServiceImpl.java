@@ -189,13 +189,29 @@ public class CartServiceImpl implements CartService {
                             .findByCartIdAndProductId(request.getCartId(), productId);
 
                     if (optionalCartItem.isPresent()) {
-                        CartItem cartItem = optionalCartItem.get();
+                        if (quantity > 0) {
+                            CartItem cartItem = optionalCartItem.get();
 
-                        // Update cartItem
-                        cartItem.setQuantity(quantity);
-                        cartItem.setTotalPrice(cartItem.getPrice() * quantity);
-                        cartItemRepository.save(cartItem);
+                            Double totalPrice = cartItem.getTotalPrice();
 
+                            // Update cartItem
+                            cartItem.setQuantity(quantity);
+                            cartItem.setTotalPrice(cartItem.getPrice() * quantity);
+                            cartItemRepository.save(cartItem);
+
+                            // Update total price in cart
+                            cart.setTotalAmount(cart.getTotalAmount() - totalPrice + cartItem.getTotalPrice());
+                            cartRepository.save(cart);
+
+                        } else {
+                            CartItem cartItem = optionalCartItem.get();
+
+                            // delete the cart item from Database
+                            cartItemRepository.delete(cartItem);
+
+                            cart.setTotalAmount(cart.getTotalAmount() - cartItem.getTotalPrice());
+                            cartRepository.save(cart);
+                        }
                     } else {
                         throw new CartItemNotFoundException("Error: Item not found which you are trying to update");
                     }
