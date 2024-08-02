@@ -90,9 +90,16 @@ This project is a secure e-commerce shopping website backend developed using Jav
 
 #### Order Management
 - **Create Order:** `POST /api/orders`
+- **Create Order By Cart:** `POST /api/orders/order-by-cart`
 - **Order Payment Callback:** `POST /api/orders/payment-callback`
 - **Fetch User Orders:** `GET /api/orders`
 - **Track Order:** `GET /api/orders/track?order_id=ID`
+
+#### Cart Management
+- **Crate Cart / Add to Cart:** `POST /api/users/cart`
+- **Update Cart:** `PUT /api/users/cart`
+- **Fetch Carts:** `GET /api/users/cart`
+- **Delete Cart:** `DELETE /api/users/cart`
 
 ## Usage
 - **Swagger UI:** Access the API documentation at `http://localhost:8080/swagger-ui.html` after running the application.
