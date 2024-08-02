@@ -2,6 +2,7 @@ package com.nothing.stella.services;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -9,11 +10,13 @@ import org.springframework.stereotype.Service;
 import com.nothing.stella.entity.Cart;
 import com.nothing.stella.entity.CartItem;
 import com.nothing.stella.entity.Product;
+import com.nothing.stella.exception.CartItemNotFoundException;
 import com.nothing.stella.exception.InvalidCartIdException;
 import com.nothing.stella.exception.InvalidProductIdException;
 import com.nothing.stella.exception.InvalidProductQuantityException;
 import com.nothing.stella.exception.UnAuthorizedUserException;
 import com.nothing.stella.exception.UnknownErrorException;
+import com.nothing.stella.model.CartUpdateRequest;
 import com.nothing.stella.model.CartViewModel;
 import com.nothing.stella.model.ProductOrderRequest;
 import com.nothing.stella.model.ProductOrderViewModel;
@@ -116,7 +119,7 @@ public class CartServiceImpl implements CartService {
                 return fetchCarts(userId);
 
             } else {
-                throw new InvalidCartIdException("Error: you are not allowed to access this cart");
+                throw new UnAuthorizedUserException("Error: you are not allowed to access this cart");
             }
         } else {
             throw new InvalidCartIdException("Error: cart not found");
@@ -166,6 +169,46 @@ public class CartServiceImpl implements CartService {
         }
 
         return cartViewModels;
+    }
+
+    public List<CartViewModel> update(String reference, CartUpdateRequest request) {
+        int userId = userService.findUserIdByReference(reference);
+
+        Cart cart = getCart(request.getCartId());
+
+        if (cart != null) {
+            if (cart.getUserId() == userId) {
+
+                List<ProductOrderRequest> updates = request.getUpdates();
+
+                for (ProductOrderRequest update : updates) {
+                    int productId = update.getProductId();
+                    int quantity = update.getQuantity();
+
+                    Optional<CartItem> optionalCartItem = cartItemRepository
+                            .findByCartIdAndProductId(request.getCartId(), productId);
+
+                    if (optionalCartItem.isPresent()) {
+                        CartItem cartItem = optionalCartItem.get();
+
+                        // Update cartItem
+                        cartItem.setQuantity(quantity);
+                        cartItem.setTotalPrice(cartItem.getPrice() * quantity);
+                        cartItemRepository.save(cartItem);
+
+                    } else {
+                        throw new CartItemNotFoundException("Error: Item not found which you are trying to update");
+                    }
+                }
+
+                return fetchCarts(userId);
+
+            } else {
+                throw new UnAuthorizedUserException("Error: you are not allowed to modify this cart");
+            }
+        } else {
+            throw new InvalidCartIdException("Error: cart not found");
+        }
     }
 
     @Override

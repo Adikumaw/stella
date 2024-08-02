@@ -4,6 +4,7 @@ import java.util.List;
 
 import com.nothing.stella.entity.Cart;
 import com.nothing.stella.entity.CartItem;
+import com.nothing.stella.model.CartUpdateRequest;
 import com.nothing.stella.model.CartViewModel;
 import com.nothing.stella.model.ProductOrderRequest;
 
@@ -15,6 +16,8 @@ public interface CartService {
     List<CartViewModel> fetchCarts(String reference);
 
     List<CartViewModel> fetchCarts(int userId);
+
+    List<CartViewModel> update(String reference, CartUpdateRequest request);
 
     List<CartViewModel> deleteCart(String reference, int cartId);
 

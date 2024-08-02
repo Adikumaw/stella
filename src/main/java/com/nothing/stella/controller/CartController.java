@@ -19,8 +19,8 @@ import com.nothing.stella.exception.ProductException;
 import com.nothing.stella.exception.UnknownErrorException;
 import com.nothing.stella.exception.UserException;
 import com.nothing.stella.model.AddToCartModel;
+import com.nothing.stella.model.CartUpdateRequest;
 import com.nothing.stella.model.CartViewModel;
-import com.nothing.stella.model.ProductOrderRequest;
 import com.nothing.stella.services.CartService;
 import com.nothing.stella.services.JWTService;
 
@@ -86,7 +86,7 @@ public class CartController {
     }
 
     @PutMapping
-    public List<CartViewModel> updateCart(@RequestBody ProductOrderRequest request,
+    public List<CartViewModel> updateCart(@RequestBody CartUpdateRequest request,
             @RequestHeader("Authorization") String jwtHeader) {
         if (jwtService.verifyJwtHeader(jwtHeader)) {
 
@@ -95,7 +95,7 @@ public class CartController {
             try {
                 String reference = jwtService.fetchReference(jwtToken);
 
-                return cartService.create(reference, request);
+                return cartService.update(reference, request);
             } catch (UserException e) {
                 throw e;
             } catch (ProductException e) {
