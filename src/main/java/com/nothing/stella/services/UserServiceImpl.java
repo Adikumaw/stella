@@ -31,17 +31,17 @@ public class UserServiceImpl implements UserService {
     @Override
     public User get(String reference) {
         if (Miscellaneous.isValidEmail(reference)) {
-            User userDetails = userRepository.findByEmail(reference);
-            if (userDetails != null) {
-                return userDetails;
+            Optional<User> optionalUser = userRepository.findByEmail(reference);
+            if (optionalUser.isPresent()) {
+                return optionalUser.get();
             } else {
                 throw new UserNotFoundException("Error: User not found by reference: " + reference);
             }
         }
         if (Miscellaneous.isValidNumber(reference)) {
-            User userDetails = userRepository.findByNumber(reference);
-            if (userDetails != null) {
-                return userDetails;
+            Optional<User> optionalUser = userRepository.findByNumber(reference);
+            if (optionalUser.isPresent()) {
+                return optionalUser.get();
             } else {
                 throw new UserNotFoundException("Error: User not found by reference: " + reference);
             }
@@ -92,12 +92,12 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public User findByNumber(String number) {
-        return userRepository.findByNumber(number);
+        return userRepository.findByNumber(number).orElse(null);
     }
 
     @Override
     public User findByEmail(String email) {
-        return userRepository.findByEmail(email);
+        return userRepository.findByEmail(email).orElse(null);
     }
 
     @Override
@@ -105,6 +105,13 @@ public class UserServiceImpl implements UserService {
         User user = get(reference);
 
         return new UserViewModel(user);
+    }
+
+    @Override
+    public String getUserName(int userId) {
+        Optional<String> optionalName = userRepository.findNameByUserId(userId);
+
+        return optionalName.orElse("unknown");
     }
 
 }

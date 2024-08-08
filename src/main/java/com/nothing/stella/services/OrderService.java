@@ -44,4 +44,6 @@ public interface OrderService {
 
     void updateOrderItemStatusToShipped(int orderItemId);
 
+    Boolean isApplicableForReview(int userId, int productId);
+
 }

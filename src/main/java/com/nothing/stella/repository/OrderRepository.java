@@ -22,4 +22,7 @@ public interface OrderRepository extends JpaRepository<Order, Integer> {
     @Query("SELECT o.orderDate FROM Order o WHERE o.orderId = ?1 AND o.status != 'created' AND o.status != 'creating'")
     Optional<Date> findPaidOrderDateByOrderId(int orderId);
 
+    @Query("SELECT o.orderId FROM Order o WHERE o.userId = ?1")
+    List<Integer> findOrderIdByUserId(int userId);
+
 }

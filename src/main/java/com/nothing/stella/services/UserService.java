@@ -27,4 +27,6 @@ public interface UserService {
     User save(User user);
 
     UserViewModel getInfo(String reference);
+
+    String getUserName(int userId);
 }

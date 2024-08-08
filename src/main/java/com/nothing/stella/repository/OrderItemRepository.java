@@ -16,4 +16,6 @@ public interface OrderItemRepository extends JpaRepository<OrderItem, Integer> {
 
     @Query("SELECT oi.productId FROM OrderItem oi WHERE oi.orderItemId = ?1")
     Optional<Integer> findProductIdByOrderItemId(int orderItemId);
+
+    Boolean existsByOrderIdAndProductId(int orderId, int productId);
 }

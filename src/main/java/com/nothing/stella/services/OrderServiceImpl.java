@@ -589,4 +589,21 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    // ----------------------------------------------------------------
+    // Functions for Review And Rating
+    // ----------------------------------------------------------------
+    @Override
+    public Boolean isApplicableForReview(int userId, int productId) {
+        List<Integer> orderIds = orderRepository.findOrderIdByUserId(userId);
+
+        for (int orderId : orderIds) {
+            Boolean isApplicable = orderItemRepository.existsByOrderIdAndProductId(orderId, productId);
+
+            if (isApplicable) {
+                return true;
+            }
+        }
+
+        return false;
+    }
 }

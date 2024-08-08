@@ -18,11 +18,14 @@ public interface UserRepository extends JpaRepository<User, Integer> {
     @Query("SELECT u.userId FROM User u WHERE u.number = ?1")
     Optional<Integer> findUserIdByNumber(String number);
 
-    User findByNumber(String number);
+    Optional<User> findByNumber(String number);
 
-    User findByEmail(String email);
+    Optional<User> findByEmail(String email);
 
     Boolean existsByEmail(String email);
 
     Boolean existsByNumber(String number);
+
+    @Query("SELECT u.name FROM User u WHERE u.userId = ?1")
+    Optional<String> findNameByUserId(int userId);
 }
