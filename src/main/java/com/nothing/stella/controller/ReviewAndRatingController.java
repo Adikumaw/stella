@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -101,7 +102,7 @@ public class ReviewAndRatingController {
         }
     }
 
-    @PostMapping("/review-rating/{reviewAndRatingId}")
+    @PutMapping("/review-rating/{reviewAndRatingId}")
     public void updateReview(@PathVariable int reviewAndRatingId, @RequestBody CreateReviewAndRatingRequest request,
             @RequestHeader("Authorization") String jwtHeader) {
         if (jwtService.verifyJwtHeader(jwtHeader)) {
