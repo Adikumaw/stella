@@ -2,7 +2,7 @@
 
 ## Project Overview
 
-This project is a secure e-commerce shopping website backend developed using Java Spring Boot. It includes user authentication, product management, order management, and payment gateway integration to provide a complete online shopping experience.
+This project is a secure e-commerce shopping website backend developed using Java Spring Boot. It includes user authentication, product management, review and ratings, order management, and payment gateway integration to provide a complete online shopping experience.
 
 ## Features
 
