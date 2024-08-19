@@ -43,7 +43,7 @@ public class SellerServiceImpl implements SellerService {
     private UpdateVerificationTokenService updateVerificationTokenService;
 
     private final static String path = "/home/all_father/Documents/workshop/java/Stella/src/main/resources/static/storeLogos";
-    private static final String verificationLink = "http://localhost:8080/sellers/verify-update?token=";
+    private static final String verificationLink = "http://localhost:8080/api/sellers/verify-update?token=";
 
     private static final Logger logger = LoggerFactory.getLogger(SellerServiceImpl.class);
 

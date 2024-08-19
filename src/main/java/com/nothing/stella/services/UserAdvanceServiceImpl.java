@@ -46,7 +46,7 @@ public class UserAdvanceServiceImpl implements UserAdvanceService {
     @Autowired
     private UpdateVerificationTokenService updateVerificationTokenService;
 
-    private static final String verificationLink = "http://localhost:8080/users/verify-update?token=";
+    private static final String verificationLink = "http://localhost:8080/api/users/verify-update?token=";
 
     private static final Logger logger = LoggerFactory.getLogger(UserAdvanceServiceImpl.class);
 

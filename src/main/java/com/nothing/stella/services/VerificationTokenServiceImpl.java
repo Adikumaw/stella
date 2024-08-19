@@ -16,7 +16,7 @@ import com.nothing.stella.repository.VerificationTokenRepository;
 @Service
 public class VerificationTokenServiceImpl implements VerificationTokenService {
 
-    private String verificationLink = "http://localhost:8080/users/verify-user?token=";
+    private String verificationLink = "http://localhost:8080/api/users/verify-user?token=";
     private String applicationName = "Stella";
     private String emailSubject = "Verify Your Email Address for " + applicationName;
     private int EXPIRATION = 24;

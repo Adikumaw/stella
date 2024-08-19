@@ -399,7 +399,7 @@ public class OrderServiceImpl implements OrderService {
 
             String companyName = "Stella";
             String productDetails = productDetailsConverter(orderViewModel.getProducts());
-            String trackingLink = "http://localhost:8080/orders/track?order_id=";
+            String trackingLink = "http://localhost:8080/api/orders/track?order_id=";
             String email = user.getEmail();
             String emailSubject = "Order Purchase Details";
 
